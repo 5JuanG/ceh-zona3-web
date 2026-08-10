@@ -1,20 +1,79 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://ai.google.dev/static/site-assets/images/share-ais-513315318.png" />
-</div>
+# Sistema CEH Zona 3 — Comité de Enlace con Hospitales (Monterrey, N.L.)
 
-# Run and deploy your AI Studio app
+Aplicación web para la gestión de médicos colaboradores, hospitales, casos,
+visitas y territorios del Comité de Enlace con Hospitales, Zona 3.
 
-This contains everything you need to run your app locally.
+- **App en vivo:** https://cehmedicoscolaboadres.web.app
+- **Repositorio:** https://github.com/5JuanG/ceh-zona3-web
+- **Proyecto de Firebase:** `cehmedicoscolaboadres` (Firestore + Authentication + Hosting)
 
-View your app in AI Studio: https://ai.studio/apps/ccae6414-e80c-4644-9918-ce97c7f565c1
+## Correr la app en tu computadora (modo desarrollo)
 
-## Run Locally
+**Requisito:** Node.js 64 bits (verifica con `node -p "process.arch"` → debe decir `x64`)
 
-**Prerequisites:**  Node.js
+```bash
+npm install
+npm run dev
+```
 
+Abre http://localhost:3000 — cualquier cambio que hagas en el código se
+refleja al instante ahí. Esto NO afecta la app pública (cehmedicoscolaboadres.web.app)
+hasta que hagas el despliegue (ver abajo).
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+## Publicar cambios (flujo completo)
+
+Cada vez que se modifique el código y se quiera reflejar en el enlace
+público que usa el comité, hay que hacer **estos 2 pasos, en orden**:
+
+### 1. Publicar en Firebase Hosting (actualiza la app pública)
+
+```bash
+npm run build
+firebase deploy --only hosting
+```
+
+Al terminar te muestra `Hosting URL: https://cehmedicoscolaboadres.web.app`
+— ese es el enlace que ya está actualizado.
+
+### 2. Respaldar el código en GitHub (opcional pero recomendado)
+
+```bash
+git add .
+git commit -m "Descripción breve del cambio"
+git push
+```
+
+### Si además cambiaron las reglas de seguridad de Firestore
+
+Solo cuando se edite el archivo `firestore.rules`:
+
+```bash
+firebase deploy --only firestore:rules
+```
+
+## Administración de cuentas de acceso (login)
+
+El login usa **Firebase Authentication real** (correo + contraseña), no
+contraseñas guardadas en la app. Para dar de alta a un nuevo integrante del
+comité:
+
+1. Agrega su nombre, correo y datos en la app (Administración → Miembros).
+2. Ve a [Firebase Console → Authentication → Users](https://console.firebase.google.com/project/cehmedicoscolaboadres/authentication/users) → **"Agregar usuario"** → escribe **el mismo correo** que registraste en el paso 1, y una contraseña temporal.
+3. Comparte con esa persona su correo y contraseña temporal, o usa el botón
+   **"Contraseña"** dentro del panel de Administración de la app para
+   enviarle un correo de Firebase con el que puede establecer su propia
+   contraseña (revisa spam la primera vez, es normal).
+
+> Por diseño, la app no puede crear cuentas de acceso por sí sola sin pasar
+> por Firebase Console — es la forma más segura sin construir un servidor
+> propio de administración.
+
+## Estructura del proyecto
+
+- `src/context/AppContext.tsx` — estado global y sincronización con Firestore
+- `src/lib/firebase.ts` — configuración e inicialización de Firebase (Auth + Firestore)
+- `src/components/InteractiveMap.tsx` — mapa interactivo de congregaciones/hospitales
+- `src/components/CEHMemberWorksheetModal.tsx` — generador de la Hoja de Trabajo PDF
+- `src/data/congregationBoundaries.ts` — los 147 polígonos de territorio (extraídos del KMZ oficial de Zona 3)
+- `firestore.rules` — reglas de seguridad de la base de datos
+- `firebase.json` / `.firebaserc` — configuración del proyecto de Firebase (Hosting + Firestore)
