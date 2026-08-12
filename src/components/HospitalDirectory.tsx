@@ -215,8 +215,8 @@ export const HospitalDirectory: React.FC<HospitalDirectoryProps> = ({
                     )}
 
                     {h.acceptsBloodlessSurgery && (
-                      <span className="inline-flex items-center gap-1 text-[11px] font-semibold bg-teal-50 text-teal-800 border border-teal-200 px-2.5 py-1 rounded-lg">
-                        <CheckCircle2 className="w-3.5 h-3.5 text-teal-600" />
+                      <span className="inline-flex items-center gap-1 text-[11px] font-semibold bg-sky-50 text-sky-800 border border-sky-200 px-2.5 py-1 rounded-lg">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-sky-600" />
                         Cirugía Sin Sangre
                       </span>
                     )}
@@ -226,7 +226,7 @@ export const HospitalDirectory: React.FC<HospitalDirectoryProps> = ({
                   <div className="bg-slate-50 p-3 rounded-xl border border-slate-200">
                     <div className="flex items-center justify-between mb-1.5">
                       <span className="font-bold text-slate-800 flex items-center gap-1.5">
-                        <UserCheck className="w-4 h-4 text-teal-600" />
+                        <UserCheck className="w-4 h-4 text-sky-600" />
                         Médicos Afiliados ({doctorsInHospital.length})
                       </span>
                       <span className="text-[11px] text-slate-500 font-medium">
@@ -276,7 +276,7 @@ export const HospitalDirectory: React.FC<HospitalDirectoryProps> = ({
                   {onFilterDoctorsByHospital && doctorsInHospital.length > 0 && (
                     <button
                       onClick={() => onFilterDoctorsByHospital(h.id)}
-                      className="text-xs font-semibold text-teal-700 hover:underline"
+                      className="text-xs font-semibold text-sky-700 hover:underline"
                     >
                       Ver médicos en este centro →
                     </button>

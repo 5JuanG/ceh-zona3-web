@@ -229,7 +229,7 @@ export const CasesManager: React.FC<CasesManagerProps> = ({ onOpenCaseModal }) =
                         <h3 className="text-base font-bold text-slate-900">
                           {hosp?.name || 'Hospital'}
                         </h3>
-                        <span className="text-xs text-teal-700 font-semibold">
+                        <span className="text-xs text-sky-700 font-semibold">
                           Especialidad: {c.specialtyRequired}
                         </span>
                       </div>
@@ -260,7 +260,7 @@ export const CasesManager: React.FC<CasesManagerProps> = ({ onOpenCaseModal }) =
 
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs text-slate-600 pt-1">
                     <div className="flex items-center gap-2">
-                      <UserCheck className="w-4 h-4 text-teal-600 shrink-0" />
+                      <UserCheck className="w-4 h-4 text-sky-600 shrink-0" />
                       <span>
                         Consultor: <strong>{consultantDoc ? `${consultantDoc.title} ${consultantDoc.name}` : 'Ninguno asignado'}</strong>
                       </span>
@@ -372,7 +372,7 @@ export const CasesManager: React.FC<CasesManagerProps> = ({ onOpenCaseModal }) =
 
                   <div className="bg-slate-50 p-3 rounded-xl space-y-1">
                     <div className="font-bold text-slate-900 text-[11px] uppercase tracking-wide flex items-center gap-1">
-                      <Stethoscope className="w-3.5 h-3.5 text-teal-600" />
+                      <Stethoscope className="w-3.5 h-3.5 text-sky-600" />
                       Diagnóstico / Problema Específico
                     </div>
                     <p className="text-slate-800 line-clamp-2 italic font-medium">
@@ -386,12 +386,12 @@ export const CasesManager: React.FC<CasesManagerProps> = ({ onOpenCaseModal }) =
 
                 {/* Lab Highlights */}
                 {ws.labResults && ws.labResults.length > 0 && ws.labResults[0].hemoglobin && (
-                  <div className="bg-teal-50/70 border border-teal-200 p-2.5 rounded-xl flex flex-wrap items-center justify-between gap-2 text-xs">
+                  <div className="bg-sky-50/70 border border-sky-200 p-2.5 rounded-xl flex flex-wrap items-center justify-between gap-2 text-xs">
                     <div className="flex items-center gap-3">
-                      <span className="font-bold text-teal-900">Último Lab ({ws.labResults[0].dateTime}):</span>
-                      <span>Hb: <strong className="text-teal-950 font-bold">{ws.labResults[0].hemoglobin} g/dl</strong></span>
-                      <span>Hto: <strong className="text-teal-950 font-bold">{ws.labResults[0].hematocrit}</strong></span>
-                      <span>Plaquetas: <strong className="text-teal-950 font-bold">{ws.labResults[0].platelets}</strong></span>
+                      <span className="font-bold text-sky-900">Último Lab ({ws.labResults[0].dateTime}):</span>
+                      <span>Hb: <strong className="text-sky-950 font-bold">{ws.labResults[0].hemoglobin} g/dl</strong></span>
+                      <span>Hto: <strong className="text-sky-950 font-bold">{ws.labResults[0].hematocrit}</strong></span>
+                      <span>Plaquetas: <strong className="text-sky-950 font-bold">{ws.labResults[0].platelets}</strong></span>
                     </div>
 
                     {ws.legalActionMentioned && (

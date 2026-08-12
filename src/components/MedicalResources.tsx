@@ -39,7 +39,7 @@ export const MedicalResources: React.FC = () => {
       case 'equipos':
         return <span className="bg-sky-100 text-sky-800 border border-sky-200 px-2.5 py-0.5 rounded-full text-xs font-semibold flex items-center gap-1"><Activity className="w-3 h-3" /> Equipamiento / Recuperadores</span>;
       case 'pbm':
-        return <span className="bg-teal-100 text-teal-800 border border-teal-200 px-2.5 py-0.5 rounded-full text-xs font-semibold flex items-center gap-1"><ShieldCheck className="w-3 h-3" /> Protocolos PBM</span>;
+        return <span className="bg-sky-100 text-sky-800 border border-sky-200 px-2.5 py-0.5 rounded-full text-xs font-semibold flex items-center gap-1"><ShieldCheck className="w-3 h-3" /> Protocolos PBM</span>;
       case 'legal':
         return <span className="bg-amber-100 text-amber-800 border border-amber-200 px-2.5 py-0.5 rounded-full text-xs font-semibold flex items-center gap-1"><Scale className="w-3 h-3" /> Legal / Autonomía</span>;
       case 'bioetica':
@@ -53,7 +53,7 @@ export const MedicalResources: React.FC = () => {
       {/* Title */}
       <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 space-y-1">
         <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
-          <BookOpen className="w-6 h-6 text-teal-600" />
+          <BookOpen className="w-6 h-6 text-sky-600" />
           Biblioteca de Recursos Médicos y Estrategias Sin Sangre (PBM)
         </h2>
         <p className="text-xs text-slate-500">
@@ -70,7 +70,7 @@ export const MedicalResources: React.FC = () => {
             placeholder="Buscar por fármaco, técnica (Cell Saver, EPO, Ácido Tranexámico)..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-slate-50 text-xs text-slate-900 placeholder-slate-400 pl-9 pr-4 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-teal-500"
+            className="w-full bg-slate-50 text-xs text-slate-900 placeholder-slate-400 pl-9 pr-4 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-sky-500"
           />
         </div>
 
@@ -102,7 +102,7 @@ export const MedicalResources: React.FC = () => {
           <button
             onClick={() => setSelectedCategory('pbm')}
             className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors ${
-              selectedCategory === 'pbm' ? 'bg-teal-600 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+              selectedCategory === 'pbm' ? 'bg-sky-600 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
             }`}
           >
             PBM
@@ -160,9 +160,9 @@ export const MedicalResources: React.FC = () => {
                   </div>
 
                   {res.dosageOrUsage && (
-                    <div className="bg-teal-50/70 p-4 rounded-xl border border-teal-200/80 space-y-1 text-teal-950">
-                      <span className="font-bold text-teal-900 block text-xs">Posología y Manejo Clínico:</span>
-                      <p className="text-teal-900">{res.dosageOrUsage}</p>
+                    <div className="bg-sky-50/70 p-4 rounded-xl border border-sky-200/80 space-y-1 text-sky-950">
+                      <span className="font-bold text-sky-900 block text-xs">Posología y Manejo Clínico:</span>
+                      <p className="text-sky-900">{res.dosageOrUsage}</p>
                     </div>
                   )}
 

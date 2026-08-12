@@ -730,69 +730,27 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
       const doctorCount = doctors.filter(d => d.hospitalIds.includes(hosp.id)).length;
       const assignedMember = getAssignedCEHMember(hosp);
 
-      const pinBgColor = assignedMember ? assignedMember.color : (hosp.pbmProtocolsAccepted ? '#0d9488' : '#d97706');
+      const pinBgColor = assignedMember ? assignedMember.color : (hosp.pbmProtocolsAccepted ? '#0284c7' : '#d97706');
       const cong = hosp.congregationNumber ? congregations.find(c => c.number === hosp.congregationNumber) : undefined;
 
       const customHtmlIcon = L.divIcon({
         className: 'custom-hospital-globito-pin',
         html: `
           <div style="
-            position: relative;
-            width: 32px;
-            height: 38px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background-color: ${pinBgColor};
+            border: 3px solid #ffffff;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.5);
             cursor: grab;
-            filter: drop-shadow(0 3px 6px rgba(0,0,0,0.45));
             transition: transform 0.15s ease-in-out;
-          ">
-            <!-- Pin Teardrop Head -->
-            <div style="
-              width: 30px;
-              height: 30px;
-              border-radius: 50% 50% 50% 0;
-              transform: rotate(-45deg);
-              background-color: ${pinBgColor};
-              border: 2.5px solid #ffffff;
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              box-shadow: inset 0 0 4px rgba(0,0,0,0.25);
-            ">
-              <!-- Upright Hospital Emoji/Symbol -->
-              <span style="
-                transform: rotate(45deg);
-                font-size: 15px;
-                line-height: 1;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                color: white;
-              ">
-                🏥
-              </span>
-            </div>
-            <!-- Member Color Dot Badge if assigned -->
-            ${assignedMember ? `
-              <span style="
-                position: absolute;
-                bottom: 3px;
-                right: -1px;
-                width: 12px;
-                height: 12px;
-                border-radius: 50%;
-                background-color: ${assignedMember.color};
-                border: 1.5px solid #ffffff;
-                box-shadow: 0 1px 3px rgba(0,0,0,0.4);
-              " title="CEH: ${assignedMember.name}"></span>
-            ` : ''}
-          </div>
+          "></div>
         `,
-        iconSize: [32, 38],
-        iconAnchor: [16, 38],
-        popupAnchor: [0, -36],
-        tooltipAnchor: [16, -20]
+        iconSize: [18, 18],
+        iconAnchor: [9, 9],
+        popupAnchor: [0, -10],
+        tooltipAnchor: [0, -10]
       });
 
       const marker = L.marker([lat, lng], { icon: customHtmlIcon, draggable: true }).addTo(markersLayer);
@@ -814,16 +772,22 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
         setTimeout(() => setRelocateSuccessMsg(null), 5000);
       });
 
-      // Tooltip on hover (quick preview)
+      // Tooltip on hover: ahora que el ícono es solo un punto de color, aquí
+      // se concentra la información relevante al pasar el mouse (sin abrir nada).
       marker.bindTooltip(`
-        <div style="font-family: system-ui, sans-serif; padding: 2px 4px; text-align: center;">
-          <strong style="font-size: 12px; color: #0f172a; display: block;">${hosp.shortName || hosp.name}</strong>
-          <span style="font-size: 10px; font-weight: bold; color: ${pinBgColor}; display: block;">
-            ${assignedMember ? `👤 Enlace: ${assignedMember.name}` : '🏥 Hospital / Clínica'}
+        <div style="font-family: system-ui, sans-serif; padding: 3px 5px; text-align: left; min-width: 160px;">
+          <strong style="font-size: 12.5px; color: #0f172a; display: block; margin-bottom: 2px;">🏥 ${hosp.shortName || hosp.name}</strong>
+          ${hosp.city ? `<span style="font-size: 10.5px; color: #475569; display: block;">📍 ${hosp.city}</span>` : ''}
+          <span style="font-size: 10.5px; font-weight: bold; color: ${pinBgColor}; display: block; margin-top: 2px;">
+            ${assignedMember ? `👤 Enlace: ${assignedMember.name}` : '⚪ Sin CEH asignado'}
           </span>
-          <span style="font-size: 9.5px; color: #64748b; font-weight: 500;">🖐️ Arrastre para mover</span>
+          <span style="font-size: 10px; color: #64748b;">
+            ${doctorCount} médico${doctorCount !== 1 ? 's' : ''} registrado${doctorCount !== 1 ? 's' : ''}
+            ${hosp.pbmProtocolsAccepted ? ' · ✅ PBM' : ''}
+          </span>
+          <span style="font-size: 9px; color: #94a3b8; display: block; margin-top: 3px;">🖐️ Clic para ver detalles · arrastre para mover</span>
         </div>
-      `, { permanent: false, direction: 'top', sticky: true });
+      `, { permanent: false, direction: 'top', sticky: true, offset: [0, -6] });
 
       // Rich popup with full hospital data on click
       marker.bindPopup(`
@@ -1229,7 +1193,7 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
       <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
-            <Compass className="w-6 h-6 text-teal-600" />
+            <Compass className="w-6 h-6 text-sky-600" />
             Mapa Interactivo de Zona de Trabajo y Hospitales (Zona 3)
           </h2>
           <p className="text-xs text-slate-500 mt-1">
@@ -1252,7 +1216,7 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
 
           <button
             onClick={() => onOpenHospitalModal()}
-            className="inline-flex items-center gap-2 px-3.5 py-2 text-xs font-bold bg-teal-600 hover:bg-teal-500 text-white rounded-lg shadow transition-colors"
+            className="inline-flex items-center gap-2 px-3.5 py-2 text-xs font-bold bg-sky-600 hover:bg-sky-500 text-white rounded-lg shadow transition-colors"
           >
             <PlusCircle className="w-4 h-4" />
             Agregar Hospital al Mapa
@@ -1261,15 +1225,15 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
       </div>
 
       {/* Guide: How to share Google Earth Map with the AI Assistant or App */}
-      <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-teal-950 text-white p-4 rounded-xl shadow border border-slate-700 space-y-3">
+      <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-sky-950 text-white p-4 rounded-xl shadow border border-slate-700 space-y-3">
         <div className="flex items-center justify-between cursor-pointer" onClick={() => setShowHowToGuide(!showHowToGuide)}>
           <div className="flex items-center gap-2.5">
-            <Globe className="w-5 h-5 text-teal-400" />
+            <Globe className="w-5 h-5 text-sky-400" />
             <h3 className="font-bold text-xs sm:text-sm">
               ¿Cómo compartir tu mapa de Google Earth (Zona 3) con el Comité y esta aplicación?
             </h3>
           </div>
-          <button className="text-xs underline text-teal-300 font-semibold hover:text-white">
+          <button className="text-xs underline text-sky-300 font-semibold hover:text-white">
             {showHowToGuide ? 'Ocultar guía' : 'Ver instrucciones'}
           </button>
         </div>
@@ -1289,7 +1253,7 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
               </div>
 
               <div className="bg-slate-800/90 p-3 rounded-lg border border-slate-700 space-y-1">
-                <span className="font-bold text-teal-300 block">Opción 2: Copiar y Pegar Coordenadas en el Chat</span>
+                <span className="font-bold text-sky-300 block">Opción 2: Copiar y Pegar Coordenadas en el Chat</span>
                 <p className="text-[11px] text-slate-300">
                   Abre tu archivo KML con el Bloc de Notas, copia el texto con las coordenadas o la lista de colonias/municipios y pégalo directamente aquí en nuestro chat. ¡El Asistente trazará la zona por ti!
                 </p>
@@ -1316,7 +1280,7 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
       )}
 
       {/* Congregation KML Upload & Status Card */}
-      <div className="bg-gradient-to-r from-slate-900 via-teal-950 to-slate-900 text-white p-5 rounded-2xl shadow border border-slate-800 flex flex-col md:flex-row items-center justify-between gap-5 text-xs">
+      <div className="bg-gradient-to-r from-slate-900 via-sky-950 to-slate-900 text-white p-5 rounded-2xl shadow border border-slate-800 flex flex-col md:flex-row items-center justify-between gap-5 text-xs">
         <div className="space-y-1.5 max-w-xl">
           <div className="flex items-center gap-2 text-amber-400 font-bold text-xs uppercase tracking-wider">
             <Compass className="w-4 h-4 text-amber-400" />
@@ -1366,7 +1330,7 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
                 {showLoadedBoundariesList && (
                   <div className="mt-2.5 p-2.5 bg-slate-950/80 rounded-xl border border-slate-800 max-h-44 overflow-y-auto flex flex-wrap gap-1.5 shadow-inner">
                     {Object.entries(congregationBoundaries).map(([name, coords]) => (
-                      <span key={name} className="bg-teal-500/20 text-teal-200 border border-teal-400/30 px-2.5 py-1 rounded-full font-bold flex items-center gap-1.5 text-[10px]">
+                      <span key={name} className="bg-sky-500/20 text-sky-200 border border-sky-400/30 px-2.5 py-1 rounded-full font-bold flex items-center gap-1.5 text-[10px]">
                         <span>📍 {name} ({Array.isArray(coords) ? coords.length : 0} pts)</span>
                         <button
                           onClick={() => handleDeleteCongregationBoundary(name)}
@@ -1416,9 +1380,9 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
 
             <button
               onClick={() => setShowPasteModal(true)}
-              className="flex-1 px-3 py-2 bg-slate-700 hover:bg-slate-600 text-teal-300 font-bold rounded-xl shadow transition-colors flex items-center justify-center gap-1.5 text-xs border border-slate-600"
+              className="flex-1 px-3 py-2 bg-slate-700 hover:bg-slate-600 text-sky-300 font-bold rounded-xl shadow transition-colors flex items-center justify-center gap-1.5 text-xs border border-slate-600"
             >
-              <Clipboard className="w-4 h-4 text-teal-400 shrink-0" />
+              <Clipboard className="w-4 h-4 text-sky-400 shrink-0" />
               <span>Pegar KML</span>
             </button>
           </div>
@@ -1469,7 +1433,7 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
               onClick={() => setShowHospitalsOnMap(!showHospitalsOnMap)}
               className={`px-2.5 py-1 rounded-md font-bold transition-all flex items-center gap-1.5 ${
                 showHospitalsOnMap
-                  ? 'bg-teal-600 text-white shadow-sm'
+                  ? 'bg-sky-600 text-white shadow-sm'
                   : 'bg-transparent text-slate-600 hover:text-slate-900'
               }`}
             >
@@ -1605,7 +1569,7 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
               onClick={() => setSidebarTab('hospital')}
               className={`py-2 px-2 rounded-lg transition-all flex items-center justify-center gap-1.5 ${
                 sidebarTab === 'hospital'
-                  ? 'bg-teal-600 text-white shadow-sm font-extrabold'
+                  ? 'bg-sky-600 text-white shadow-sm font-extrabold'
                   : 'text-slate-600 hover:text-slate-900'
               }`}
             >
@@ -1730,7 +1694,7 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
                             {assignedCongs.length} congs
                           </span>
                           <span className="bg-white border border-slate-200 text-slate-700 px-2 py-0.5 rounded-md font-bold flex items-center gap-1">
-                            <Building2 className="w-3 h-3 text-teal-600" />
+                            <Building2 className="w-3 h-3 text-sky-600" />
                             {assignedHospCount} hospitales
                           </span>
                         </div>
@@ -1745,7 +1709,7 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
                                   key={c.number}
                                   className={`px-1.5 py-0.5 rounded text-[10px] font-semibold border ${
                                     isKmlLoaded
-                                      ? 'bg-teal-50 border-teal-300 text-teal-900'
+                                      ? 'bg-sky-50 border-sky-300 text-sky-900'
                                       : 'bg-white border-slate-200 text-slate-700'
                                   }`}
                                 >
@@ -1800,7 +1764,7 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
                 <div className="space-y-4">
                   <div className="flex items-start justify-between border-b border-slate-100 pb-3">
                     <div>
-                      <span className="text-[10px] uppercase font-mono tracking-wider text-teal-700 font-bold bg-teal-50 px-2 py-0.5 rounded border border-teal-200">
+                      <span className="text-[10px] uppercase font-mono tracking-wider text-sky-700 font-bold bg-sky-50 px-2 py-0.5 rounded border border-sky-200">
                         {selectedHospital.zone}
                       </span>
                       <h3 className="text-base font-extrabold text-slate-900 mt-1">
@@ -1921,7 +1885,7 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
                           </span>
                           <button
                             onClick={() => onFilterDoctorsByHospital(selectedHospital.id)}
-                            className="text-teal-700 font-bold hover:underline text-[11px]"
+                            className="text-sky-700 font-bold hover:underline text-[11px]"
                           >
                             Ver todos
                           </button>
@@ -1934,7 +1898,7 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
                             connectedDoctors.map(doc => (
                               <div key={doc.id} className="p-2 bg-slate-50 rounded-lg text-xs flex items-center justify-between">
                                 <span className="font-bold text-slate-800">{doc.title} {doc.name}</span>
-                                <span className="text-[10px] text-teal-800 font-semibold">{doc.specialty}</span>
+                                <span className="text-[10px] text-sky-800 font-semibold">{doc.specialty}</span>
                               </div>
                             ))
                           )}
@@ -2022,7 +1986,7 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
           <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 max-w-xl w-full p-6 space-y-4 text-slate-800">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <div className="flex items-center gap-2">
-                <Clipboard className="w-5 h-5 text-teal-600" />
+                <Clipboard className="w-5 h-5 text-sky-600" />
                 <h3 className="font-extrabold text-base text-slate-900">
                   Pegar Código o Coordenadas KML (Google Earth)
                 </h3>
@@ -2046,7 +2010,7 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
                 <select
                   value={selectedCongForUpload}
                   onChange={(e) => setSelectedCongForUpload(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 font-bold text-slate-800 text-xs focus:ring-2 focus:ring-teal-500"
+                  className="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 font-bold text-slate-800 text-xs focus:ring-2 focus:ring-sky-500"
                 >
                   {congregations.map(c => (
                     <option key={c.number} value={c.name}>
@@ -2065,7 +2029,7 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
                   value={pastedKmlText}
                   onChange={(e) => setPastedKmlText(e.target.value)}
                   placeholder={`Ejemplo XML KML:\n<coordinates>\n  -100.2642,25.6685,0\n  -100.2481,25.6760,0\n  -100.2240,25.6720,0\n</coordinates>\n\nO lista simple:\n25.6685, -100.2642\n25.6760, -100.2481\n...`}
-                  className="w-full p-3 font-mono text-xs bg-slate-900 text-teal-200 border border-slate-700 rounded-xl focus:ring-2 focus:ring-teal-500"
+                  className="w-full p-3 font-mono text-xs bg-slate-900 text-sky-200 border border-slate-700 rounded-xl focus:ring-2 focus:ring-sky-500"
                 />
               </div>
 
@@ -2092,7 +2056,7 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
                   setPastedKmlText('');
                 }}
                 disabled={!pastedKmlText.trim()}
-                className="px-4 py-2 bg-teal-600 hover:bg-teal-500 disabled:opacity-50 text-white font-bold rounded-lg text-xs shadow flex items-center gap-1.5"
+                className="px-4 py-2 bg-sky-600 hover:bg-sky-500 disabled:opacity-50 text-white font-bold rounded-lg text-xs shadow flex items-center gap-1.5"
               >
                 <CheckCircle2 className="w-4 h-4" />
                 Guardar Delimitación Exacta

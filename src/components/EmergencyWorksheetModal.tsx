@@ -357,7 +357,7 @@ export const EmergencyWorksheetModal: React.FC<EmergencyWorksheetModalProps> = (
                   : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
               }`}
             >
-              <User className="w-3.5 h-3.5 text-teal-600" />
+              <User className="w-3.5 h-3.5 text-sky-600" />
               2. Paciente / Hospital
             </button>
 
@@ -539,7 +539,7 @@ export const EmergencyWorksheetModal: React.FC<EmergencyWorksheetModalProps> = (
                         id="isBaptized"
                         checked={isBaptized}
                         onChange={(e) => setIsBaptized(e.target.checked)}
-                        className="w-4 h-4 text-teal-600 rounded"
+                        className="w-4 h-4 text-sky-600 rounded"
                       />
                       <label htmlFor="isBaptized" className="font-semibold text-slate-800 cursor-pointer">¿Bautizado?</label>
                     </div>
@@ -550,7 +550,7 @@ export const EmergencyWorksheetModal: React.FC<EmergencyWorksheetModalProps> = (
                         id="hasGoodReputation"
                         checked={hasGoodReputation}
                         onChange={(e) => setHasGoodReputation(e.target.checked)}
-                        className="w-4 h-4 text-teal-600 rounded"
+                        className="w-4 h-4 text-sky-600 rounded"
                       />
                       <label htmlFor="hasGoodReputation" className="font-semibold text-slate-800 cursor-pointer">¿Buena reputación?</label>
                     </div>
@@ -561,7 +561,7 @@ export const EmergencyWorksheetModal: React.FC<EmergencyWorksheetModalProps> = (
                         id="hasDpaCompleted"
                         checked={hasDpaCompleted}
                         onChange={(e) => setHasDpaCompleted(e.target.checked)}
-                        className="w-4 h-4 text-teal-600 rounded"
+                        className="w-4 h-4 text-sky-600 rounded"
                       />
                       <label htmlFor="hasDpaCompleted" className="font-semibold text-slate-800 cursor-pointer">¿DPA completa?</label>
                     </div>
@@ -997,7 +997,7 @@ export const EmergencyWorksheetModal: React.FC<EmergencyWorksheetModalProps> = (
                         id="medicalStaffNotifiedHlcHelp"
                         checked={medicalStaffNotifiedHlcHelp}
                         onChange={(e) => setMedicalStaffNotifiedHlcHelp(e.target.checked)}
-                        className="w-4 h-4 text-teal-600 rounded"
+                        className="w-4 h-4 text-sky-600 rounded"
                       />
                       <label htmlFor="medicalStaffNotifiedHlcHelp" className="font-semibold text-slate-800 cursor-pointer text-xs">
                         ¿Se comunicó al personal médico que el paciente solicita la ayuda del HLC?

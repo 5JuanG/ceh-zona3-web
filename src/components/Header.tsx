@@ -12,7 +12,6 @@ import {
   Download, 
   Upload, 
   Printer, 
-  RotateCcw,
   ShieldAlert,
   ShieldCheck,
   FileSpreadsheet,
@@ -47,7 +46,6 @@ export const Header: React.FC<HeaderProps> = ({
     setGlobalSearch,
     exportDataJSON, 
     importDataJSON,
-    resetToDefaultData,
     stats,
     isCloudSynced,
     syncAllToCloud
@@ -112,7 +110,7 @@ export const Header: React.FC<HeaderProps> = ({
                 <h1 className="text-lg font-bold tracking-tight text-white leading-tight">
                   Comité de Enlace con Hospitales
                 </h1>
-                <span className="hidden sm:inline-block px-2 py-0.5 text-xs font-semibold bg-teal-900/80 text-teal-300 rounded border border-teal-700/50">
+                <span className="hidden sm:inline-block px-2 py-0.5 text-xs font-semibold bg-sky-900/80 text-sky-300 rounded border border-sky-700/50">
                   CEH / COL
                 </span>
               </div>
@@ -131,7 +129,7 @@ export const Header: React.FC<HeaderProps> = ({
                 placeholder="Buscar médico, especialidad, hospital o técnica..."
                 value={globalSearch}
                 onChange={(e) => setGlobalSearch(e.target.value)}
-                className="w-full bg-slate-800/90 text-sm text-slate-100 placeholder-slate-400 pl-9 pr-4 py-1.5 rounded-lg border border-slate-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all"
+                className="w-full bg-slate-800/90 text-sm text-slate-100 placeholder-slate-400 pl-9 pr-4 py-1.5 rounded-lg border border-slate-700 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent transition-all"
               />
               {globalSearch && (
                 <button
@@ -155,9 +153,9 @@ export const Header: React.FC<HeaderProps> = ({
                 });
               }}
               title="Haz clic para forzar la sincronización en la Nube"
-              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-bold bg-teal-900/90 hover:bg-teal-800 text-teal-200 rounded-lg border border-teal-500/70 shadow-sm transition-all"
+              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-bold bg-sky-900/90 hover:bg-sky-800 text-sky-200 rounded-lg border border-sky-500/70 shadow-sm transition-all"
             >
-              <Cloud className="w-4 h-4 text-teal-300 animate-pulse" />
+              <Cloud className="w-4 h-4 text-sky-300 animate-pulse" />
               <span className="inline sm:hidden">☁️ Nube</span>
               <span className="hidden sm:inline lg:hidden">Sync Nube</span>
               <span className="hidden lg:inline">{isCloudSynced ? 'Sincronizado en Nube' : 'Sincronizar Nube'}</span>
@@ -167,9 +165,9 @@ export const Header: React.FC<HeaderProps> = ({
               <button
                 onClick={onOpenMemberWorksheetModal}
                 title="Generar Hoja de Trabajo en PDF por Miembro del CEH"
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold bg-teal-600 hover:bg-teal-500 text-white rounded-lg shadow-sm transition-colors"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold bg-sky-600 hover:bg-sky-500 text-white rounded-lg shadow-sm transition-colors"
               >
-                <FileText className="w-4 h-4 text-teal-100" />
+                <FileText className="w-4 h-4 text-sky-100" />
                 <span className="hidden lg:inline">Hoja Miembro PDF</span>
                 <span className="inline lg:hidden">Hoja PDF</span>
               </button>
@@ -180,7 +178,7 @@ export const Header: React.FC<HeaderProps> = ({
               title="Generar Reporte Imprimible de Médicos"
               className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg border border-slate-700 transition-colors"
             >
-              <Printer className="w-4 h-4 text-teal-400" />
+              <Printer className="w-4 h-4 text-sky-400" />
               <span className="hidden lg:inline">Reporte Imprimible</span>
             </button>
 
@@ -224,7 +222,7 @@ export const Header: React.FC<HeaderProps> = ({
                     }}
                     className="w-full text-left px-4 py-2 hover:bg-slate-700 text-slate-200 flex items-center gap-2"
                   >
-                    <Download className="w-4 h-4 text-teal-400" />
+                    <Download className="w-4 h-4 text-sky-400" />
                     Exportar Copia JSON
                   </button>
                   <button
@@ -236,19 +234,6 @@ export const Header: React.FC<HeaderProps> = ({
                   >
                     <Upload className="w-4 h-4 text-sky-400" />
                     Importar Copia JSON
-                  </button>
-                  <hr className="border-slate-700 my-1" />
-                  <button
-                    onClick={() => {
-                      if (confirm('¿Restablecer los datos de demostración predeterminados? Se perderán las modificaciones locales no guardadas.')) {
-                        resetToDefaultData();
-                      }
-                      setShowDataMenu(false);
-                    }}
-                    className="w-full text-left px-4 py-2 hover:bg-slate-700 text-rose-300 flex items-center gap-2"
-                  >
-                    <RotateCcw className="w-4 h-4 text-rose-400" />
-                    Restaurar Datos Ejemplo
                   </button>
                 </div>
               )}
@@ -262,16 +247,16 @@ export const Header: React.FC<HeaderProps> = ({
                     <img 
                       src={currentUser.photoUrl} 
                       alt={currentUser.name} 
-                      className="w-6 h-6 rounded-full object-cover border border-teal-400/50" 
+                      className="w-6 h-6 rounded-full object-cover border border-sky-400/50" 
                     />
                   ) : (
-                    <div className="w-6 h-6 rounded-full bg-teal-600 text-white flex items-center justify-center text-[10px] font-bold">
+                    <div className="w-6 h-6 rounded-full bg-sky-600 text-white flex items-center justify-center text-[10px] font-bold">
                       {currentUser.name.charAt(0)}
                     </div>
                   )}
                   <div className="text-left leading-tight">
                     <div className="text-xs font-bold text-slate-100 max-w-[120px] truncate">{currentUser.name}</div>
-                    <div className="text-[9px] text-teal-400 font-semibold">{currentUser.role}</div>
+                    <div className="text-[9px] text-sky-400 font-semibold">{currentUser.role}</div>
                   </div>
                 </div>
 
@@ -322,11 +307,11 @@ export const Header: React.FC<HeaderProps> = ({
                 onClick={() => setActiveTab(item.id)}
                 className={`flex items-center gap-2 px-3.5 py-2 text-sm font-medium rounded-md transition-colors ${
                   isActive
-                    ? 'bg-teal-600/20 text-teal-300 border border-teal-500/30'
+                    ? 'bg-sky-600/20 text-sky-300 border border-sky-500/30'
                     : 'text-slate-300 hover:text-white hover:bg-slate-800'
                 }`}
               >
-                <Icon className={`w-4 h-4 ${isActive ? 'text-teal-400' : 'text-slate-400'}`} />
+                <Icon className={`w-4 h-4 ${isActive ? 'text-sky-400' : 'text-slate-400'}`} />
                 <span>{item.label}</span>
                 {item.count !== undefined && (
                   <span
@@ -334,7 +319,7 @@ export const Header: React.FC<HeaderProps> = ({
                       item.alert
                         ? 'bg-amber-500 text-slate-950 animate-pulse'
                         : isActive
-                        ? 'bg-teal-700 text-teal-100'
+                        ? 'bg-sky-700 text-sky-100'
                         : 'bg-slate-800 text-slate-400'
                     }`}
                   >
@@ -351,17 +336,17 @@ export const Header: React.FC<HeaderProps> = ({
       {mobileMenuOpen && (
         <div className="md:hidden border-t border-slate-800 bg-slate-900 px-4 pt-3 pb-4 space-y-2">
           {/* Mobile Cloud Sync Banner */}
-          <div className="bg-gradient-to-r from-teal-950 to-slate-900 border border-teal-500/60 rounded-xl p-3 flex items-center justify-between gap-2 shadow-md">
+          <div className="bg-gradient-to-r from-sky-950 to-slate-900 border border-sky-500/60 rounded-xl p-3 flex items-center justify-between gap-2 shadow-md">
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-lg bg-teal-500/20 flex items-center justify-center text-teal-300 shrink-0">
-                <Cloud className="w-5 h-5 text-teal-400" />
+              <div className="w-8 h-8 rounded-lg bg-sky-500/20 flex items-center justify-center text-sky-300 shrink-0">
+                <Cloud className="w-5 h-5 text-sky-400" />
               </div>
               <div>
-                <div className="text-xs font-bold text-teal-100 flex items-center gap-1.5">
+                <div className="text-xs font-bold text-sky-100 flex items-center gap-1.5">
                   Sincronización Nube
-                  <span className={`w-2 h-2 rounded-full ${isCloudSynced ? 'bg-teal-400 animate-pulse' : 'bg-amber-400'}`} />
+                  <span className={`w-2 h-2 rounded-full ${isCloudSynced ? 'bg-sky-400 animate-pulse' : 'bg-amber-400'}`} />
                 </div>
-                <div className="text-[10px] text-teal-300/80">
+                <div className="text-[10px] text-sky-300/80">
                   {isCloudSynced ? 'Conectado a Firebase Nube' : 'Sincronizar 16 miembros'}
                 </div>
               </div>
@@ -373,7 +358,7 @@ export const Header: React.FC<HeaderProps> = ({
                   else alert(`Error al sincronizar con la Nube:\n${res.error || 'Verifica tu conexión.'}`);
                 });
               }}
-              className="px-3 py-1.5 bg-teal-600 hover:bg-teal-500 text-white font-bold text-xs rounded-lg shadow border border-teal-400/40 shrink-0 flex items-center gap-1"
+              className="px-3 py-1.5 bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs rounded-lg shadow border border-sky-400/40 shrink-0 flex items-center gap-1"
             >
               <Cloud className="w-3.5 h-3.5" />
               Sincronizar
@@ -391,7 +376,7 @@ export const Header: React.FC<HeaderProps> = ({
                   setMobileMenuOpen(false);
                 }}
                 className={`w-full flex items-center justify-between px-3 py-2 text-sm font-medium rounded-lg ${
-                  isActive ? 'bg-teal-600 text-white' : 'text-slate-300 hover:bg-slate-800'
+                  isActive ? 'bg-sky-600 text-white' : 'text-slate-300 hover:bg-slate-800'
                 }`}
               >
                 <div className="flex items-center gap-2">

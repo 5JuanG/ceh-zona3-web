@@ -131,26 +131,26 @@ export const AdminControlPanel: React.FC<AdminControlPanelProps> = ({
       
       {/* Toast Notification */}
       {noticeMessage && (
-        <div className="fixed bottom-6 right-6 z-50 bg-slate-900 text-white px-5 py-3 rounded-2xl shadow-2xl border border-teal-500/40 flex items-center gap-3 animate-in fade-in slide-in-from-bottom-4">
-          <CheckCircle2 className="w-5 h-5 text-teal-400 shrink-0" />
+        <div className="fixed bottom-6 right-6 z-50 bg-slate-900 text-white px-5 py-3 rounded-2xl shadow-2xl border border-sky-500/40 flex items-center gap-3 animate-in fade-in slide-in-from-bottom-4">
+          <CheckCircle2 className="w-5 h-5 text-sky-400 shrink-0" />
           <p className="text-xs font-bold">{noticeMessage}</p>
         </div>
       )}
 
       {/* Control Panel Header Banner */}
-      <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-teal-950 text-white rounded-3xl p-6 sm:p-8 shadow-xl border border-slate-700/80 relative overflow-hidden">
+      <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-sky-950 text-white rounded-3xl p-6 sm:p-8 shadow-xl border border-slate-700/80 relative overflow-hidden">
         <div className="absolute right-0 top-0 bottom-0 opacity-10 pointer-events-none flex items-center pr-8">
-          <ShieldCheck className="w-64 h-64 text-teal-300" />
+          <ShieldCheck className="w-64 h-64 text-sky-300" />
         </div>
 
         <div className="relative z-10 space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-2xl bg-teal-600/90 text-white flex items-center justify-center font-bold shadow-lg border border-teal-400/30">
-                <ShieldCheck className="w-7 h-7 text-teal-100" />
+              <div className="w-12 h-12 rounded-2xl bg-sky-600/90 text-white flex items-center justify-center font-bold shadow-lg border border-sky-400/30">
+                <ShieldCheck className="w-7 h-7 text-sky-100" />
               </div>
               <div>
-                <span className="inline-block px-2.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wider bg-teal-900/80 text-teal-300 rounded-md border border-teal-700/50 mb-1">
+                <span className="inline-block px-2.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wider bg-sky-900/80 text-sky-300 rounded-md border border-sky-700/50 mb-1">
                   Módulo de Seguridad y Control Acceso CEH
                 </span>
                 <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight">
@@ -165,7 +165,7 @@ export const AdminControlPanel: React.FC<AdminControlPanelProps> = ({
                 onClick={() => setCurrentRole('administrador')}
                 className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${
                   currentRole === 'administrador'
-                    ? 'bg-teal-600 text-white shadow'
+                    ? 'bg-sky-600 text-white shadow'
                     : 'text-slate-400 hover:text-white'
                 }`}
               >
@@ -189,15 +189,15 @@ export const AdminControlPanel: React.FC<AdminControlPanelProps> = ({
           </p>
 
           {/* Cloud Synchronization Status Banner */}
-          <div className="bg-teal-900/40 border border-teal-500/40 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
+          <div className="bg-sky-900/40 border border-sky-500/40 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-teal-500/20 flex items-center justify-center text-teal-300 shrink-0">
+              <div className="w-9 h-9 rounded-xl bg-sky-500/20 flex items-center justify-center text-sky-300 shrink-0">
                 <Cloud className="w-5 h-5" />
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <h4 className="font-bold text-teal-200">Sincronización en Tiempo Real (Firebase Nube)</h4>
-                  <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-teal-500/30 text-teal-200 border border-teal-400/30">
+                  <h4 className="font-bold text-sky-200">Sincronización en Tiempo Real (Firebase Nube)</h4>
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-sky-500/30 text-sky-200 border border-sky-400/30">
                     {isCloudSynced ? 'Activa' : 'Conectando'}
                   </span>
                 </div>
@@ -213,7 +213,7 @@ export const AdminControlPanel: React.FC<AdminControlPanelProps> = ({
                   else showNotification('Error al sincronizar con la nube');
                 });
               }}
-              className="px-3.5 py-2 bg-teal-600 hover:bg-teal-500 text-white font-bold rounded-xl shadow-md border border-teal-400/40 transition-colors flex items-center gap-1.5 shrink-0"
+              className="px-3.5 py-2 bg-sky-600 hover:bg-sky-500 text-white font-bold rounded-xl shadow-md border border-sky-400/40 transition-colors flex items-center gap-1.5 shrink-0"
             >
               <RefreshCw className="w-3.5 h-3.5" />
               Sincronizar Todo a la Nube
@@ -224,7 +224,7 @@ export const AdminControlPanel: React.FC<AdminControlPanelProps> = ({
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
             <div className="bg-slate-800/60 backdrop-blur border border-slate-700/60 p-3 rounded-2xl">
               <span className="text-[11px] text-slate-400 font-medium block">Total Integrantes CEH</span>
-              <span className="text-xl font-black text-teal-300 mt-0.5 block">{cehMembers.length}</span>
+              <span className="text-xl font-black text-sky-300 mt-0.5 block">{cehMembers.length}</span>
             </div>
             <div className="bg-slate-800/60 backdrop-blur border border-slate-700/60 p-3 rounded-2xl">
               <span className="text-[11px] text-slate-400 font-medium block">Integrantes Activos</span>
@@ -251,7 +251,7 @@ export const AdminControlPanel: React.FC<AdminControlPanelProps> = ({
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
           <div>
             <h3 className="font-extrabold text-slate-900 text-base flex items-center gap-2">
-              <Key className="w-5 h-5 text-teal-600" />
+              <Key className="w-5 h-5 text-sky-600" />
               Gestión de Permisos y Recuperación de Contraseñas
             </h3>
             <p className="text-xs text-slate-500 mt-0.5">
@@ -263,7 +263,7 @@ export const AdminControlPanel: React.FC<AdminControlPanelProps> = ({
             {onOpenMemberWorksheetModal && (
               <button
                 onClick={() => onOpenMemberWorksheetModal()}
-                className="px-3.5 py-2 bg-teal-600 hover:bg-teal-500 text-white font-extrabold rounded-xl shadow text-xs transition-colors flex items-center gap-1.5"
+                className="px-3.5 py-2 bg-sky-600 hover:bg-sky-500 text-white font-extrabold rounded-xl shadow text-xs transition-colors flex items-center gap-1.5"
               >
                 <FileText className="w-4 h-4" />
                 <span>Generar Hoja de Trabajo PDF</span>
@@ -277,7 +277,7 @@ export const AdminControlPanel: React.FC<AdminControlPanelProps> = ({
                 placeholder="Buscar por nombre, cargo o correo..."
                 value={searchTerm}
                 onChange={e => setSearchTerm(e.target.value)}
-                className="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-slate-300 focus:ring-2 focus:ring-teal-500 font-medium"
+                className="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-slate-300 focus:ring-2 focus:ring-sky-500 font-medium"
               />
             </div>
           </div>
@@ -375,12 +375,12 @@ export const AdminControlPanel: React.FC<AdminControlPanelProps> = ({
                         onClick={() => handleTogglePermission(member, 'canAssignTerritories')}
                         className={`p-1.5 rounded-lg border transition-all ${
                           perms.canAssignTerritories
-                            ? 'bg-teal-50 text-teal-700 border-teal-300 hover:bg-teal-100'
+                            ? 'bg-sky-50 text-sky-700 border-sky-300 hover:bg-sky-100'
                             : 'bg-slate-100 text-slate-400 border-slate-200'
                         }`}
                         title={perms.canAssignTerritories ? 'Permiso Activado' : 'Permiso Desactivado'}
                       >
-                        {perms.canAssignTerritories ? <CheckCircle2 className="w-5 h-5 text-teal-600" /> : <XCircle className="w-5 h-5 text-slate-300" />}
+                        {perms.canAssignTerritories ? <CheckCircle2 className="w-5 h-5 text-sky-600" /> : <XCircle className="w-5 h-5 text-slate-300" />}
                       </button>
                     </td>
 
@@ -390,12 +390,12 @@ export const AdminControlPanel: React.FC<AdminControlPanelProps> = ({
                         onClick={() => handleTogglePermission(member, 'canManageMembers')}
                         className={`p-1.5 rounded-lg border transition-all ${
                           perms.canManageMembers
-                            ? 'bg-teal-50 text-teal-700 border-teal-300 hover:bg-teal-100'
+                            ? 'bg-sky-50 text-sky-700 border-sky-300 hover:bg-sky-100'
                             : 'bg-slate-100 text-slate-400 border-slate-200'
                         }`}
                         title={perms.canManageMembers ? 'Permiso Activado' : 'Permiso Desactivado'}
                       >
-                        {perms.canManageMembers ? <CheckCircle2 className="w-5 h-5 text-teal-600" /> : <XCircle className="w-5 h-5 text-slate-300" />}
+                        {perms.canManageMembers ? <CheckCircle2 className="w-5 h-5 text-sky-600" /> : <XCircle className="w-5 h-5 text-slate-300" />}
                       </button>
                     </td>
 
@@ -405,12 +405,12 @@ export const AdminControlPanel: React.FC<AdminControlPanelProps> = ({
                         onClick={() => handleTogglePermission(member, 'canRemoveMembers')}
                         className={`p-1.5 rounded-lg border transition-all ${
                           perms.canRemoveMembers
-                            ? 'bg-teal-50 text-teal-700 border-teal-300 hover:bg-teal-100'
+                            ? 'bg-sky-50 text-sky-700 border-sky-300 hover:bg-sky-100'
                             : 'bg-slate-100 text-slate-400 border-slate-200'
                         }`}
                         title={perms.canRemoveMembers ? 'Permiso Activado' : 'Permiso Desactivado'}
                       >
-                        {perms.canRemoveMembers ? <CheckCircle2 className="w-5 h-5 text-teal-600" /> : <XCircle className="w-5 h-5 text-slate-300" />}
+                        {perms.canRemoveMembers ? <CheckCircle2 className="w-5 h-5 text-sky-600" /> : <XCircle className="w-5 h-5 text-slate-300" />}
                       </button>
                     </td>
 
@@ -420,12 +420,12 @@ export const AdminControlPanel: React.FC<AdminControlPanelProps> = ({
                         onClick={() => handleTogglePermission(member, 'canManagePasswords')}
                         className={`p-1.5 rounded-lg border transition-all ${
                           perms.canManagePasswords
-                            ? 'bg-teal-50 text-teal-700 border-teal-300 hover:bg-teal-100'
+                            ? 'bg-sky-50 text-sky-700 border-sky-300 hover:bg-sky-100'
                             : 'bg-slate-100 text-slate-400 border-slate-200'
                         }`}
                         title={perms.canManagePasswords ? 'Permiso Activado' : 'Permiso Desactivado'}
                       >
-                        {perms.canManagePasswords ? <CheckCircle2 className="w-5 h-5 text-teal-600" /> : <XCircle className="w-5 h-5 text-slate-300" />}
+                        {perms.canManagePasswords ? <CheckCircle2 className="w-5 h-5 text-sky-600" /> : <XCircle className="w-5 h-5 text-slate-300" />}
                       </button>
                     </td>
 
@@ -435,10 +435,10 @@ export const AdminControlPanel: React.FC<AdminControlPanelProps> = ({
                         {onOpenMemberWorksheetModal && (
                           <button
                             onClick={() => onOpenMemberWorksheetModal(member.id)}
-                            className="px-2.5 py-1.5 bg-teal-50 hover:bg-teal-100 text-teal-800 border border-teal-200 font-bold rounded-xl text-[11px] transition-colors inline-flex items-center gap-1"
+                            className="px-2.5 py-1.5 bg-sky-50 hover:bg-sky-100 text-sky-800 border border-sky-200 font-bold rounded-xl text-[11px] transition-colors inline-flex items-center gap-1"
                             title="Generar Hoja de Trabajo en PDF para este miembro"
                           >
-                            <FileText className="w-3.5 h-3.5 text-teal-600" />
+                            <FileText className="w-3.5 h-3.5 text-sky-600" />
                             <span>Hoja Trabajo PDF</span>
                           </button>
                         )}
@@ -511,7 +511,7 @@ export const AdminControlPanel: React.FC<AdminControlPanelProps> = ({
                       <h4 className="font-extrabold text-slate-900 text-sm leading-tight truncate">
                         {member.name}
                       </h4>
-                      <div className="text-xs font-semibold text-teal-700 mt-0.5">
+                      <div className="text-xs font-semibold text-sky-700 mt-0.5">
                         {member.role || 'Anciano'}
                       </div>
                       {member.email && (
@@ -544,48 +544,48 @@ export const AdminControlPanel: React.FC<AdminControlPanelProps> = ({
                       onClick={() => handleTogglePermission(member, 'canAssignTerritories')}
                       className={`p-2 rounded-xl border flex items-center justify-between text-left font-bold transition-all ${
                         perms.canAssignTerritories
-                          ? 'bg-teal-50/90 text-teal-900 border-teal-300'
+                          ? 'bg-sky-50/90 text-sky-900 border-sky-300'
                           : 'bg-slate-50 text-slate-400 border-slate-200'
                       }`}
                     >
                       <span className="truncate pr-1">🗺️ Territorios</span>
-                      {perms.canAssignTerritories ? <CheckCircle2 className="w-4 h-4 text-teal-600 shrink-0" /> : <XCircle className="w-4 h-4 text-slate-300 shrink-0" />}
+                      {perms.canAssignTerritories ? <CheckCircle2 className="w-4 h-4 text-sky-600 shrink-0" /> : <XCircle className="w-4 h-4 text-slate-300 shrink-0" />}
                     </button>
 
                     <button
                       onClick={() => handleTogglePermission(member, 'canManageMembers')}
                       className={`p-2 rounded-xl border flex items-center justify-between text-left font-bold transition-all ${
                         perms.canManageMembers
-                          ? 'bg-teal-50/90 text-teal-900 border-teal-300'
+                          ? 'bg-sky-50/90 text-sky-900 border-sky-300'
                           : 'bg-slate-50 text-slate-400 border-slate-200'
                       }`}
                     >
                       <span className="truncate pr-1">👥 Agregar</span>
-                      {perms.canManageMembers ? <CheckCircle2 className="w-4 h-4 text-teal-600 shrink-0" /> : <XCircle className="w-4 h-4 text-slate-300 shrink-0" />}
+                      {perms.canManageMembers ? <CheckCircle2 className="w-4 h-4 text-sky-600 shrink-0" /> : <XCircle className="w-4 h-4 text-slate-300 shrink-0" />}
                     </button>
 
                     <button
                       onClick={() => handleTogglePermission(member, 'canRemoveMembers')}
                       className={`p-2 rounded-xl border flex items-center justify-between text-left font-bold transition-all ${
                         perms.canRemoveMembers
-                          ? 'bg-teal-50/90 text-teal-900 border-teal-300'
+                          ? 'bg-sky-50/90 text-sky-900 border-sky-300'
                           : 'bg-slate-50 text-slate-400 border-slate-200'
                       }`}
                     >
                       <span className="truncate pr-1">🚫 Dar Baja</span>
-                      {perms.canRemoveMembers ? <CheckCircle2 className="w-4 h-4 text-teal-600 shrink-0" /> : <XCircle className="w-4 h-4 text-slate-300 shrink-0" />}
+                      {perms.canRemoveMembers ? <CheckCircle2 className="w-4 h-4 text-sky-600 shrink-0" /> : <XCircle className="w-4 h-4 text-slate-300 shrink-0" />}
                     </button>
 
                     <button
                       onClick={() => handleTogglePermission(member, 'canManagePasswords')}
                       className={`p-2 rounded-xl border flex items-center justify-between text-left font-bold transition-all ${
                         perms.canManagePasswords
-                          ? 'bg-teal-50/90 text-teal-900 border-teal-300'
+                          ? 'bg-sky-50/90 text-sky-900 border-sky-300'
                           : 'bg-slate-50 text-slate-400 border-slate-200'
                       }`}
                     >
                       <span className="truncate pr-1">🔑 Claves</span>
-                      {perms.canManagePasswords ? <CheckCircle2 className="w-4 h-4 text-teal-600 shrink-0" /> : <XCircle className="w-4 h-4 text-slate-300 shrink-0" />}
+                      {perms.canManagePasswords ? <CheckCircle2 className="w-4 h-4 text-sky-600 shrink-0" /> : <XCircle className="w-4 h-4 text-slate-300 shrink-0" />}
                     </button>
                   </div>
                 </div>
@@ -669,8 +669,8 @@ export const AdminControlPanel: React.FC<AdminControlPanelProps> = ({
                   )}
 
                   {resetStatus === 'sent' && (
-                    <div className="bg-teal-50 border border-teal-200 rounded-2xl p-3.5 text-teal-900 text-xs flex items-start gap-2.5">
-                      <CheckCircle2 className="w-4 h-4 text-teal-600 shrink-0 mt-0.5" />
+                    <div className="bg-sky-50 border border-sky-200 rounded-2xl p-3.5 text-sky-900 text-xs flex items-start gap-2.5">
+                      <CheckCircle2 className="w-4 h-4 text-sky-600 shrink-0 mt-0.5" />
                       <p>Correo enviado. Pídele a {selectedMemberForPassword.name} que revise su bandeja de entrada (y spam) y siga el enlace.</p>
                     </div>
                   )}
@@ -679,7 +679,7 @@ export const AdminControlPanel: React.FC<AdminControlPanelProps> = ({
                     type="button"
                     onClick={handleSendResetEmail}
                     disabled={resetStatus === 'sending' || resetStatus === 'sent'}
-                    className="w-full py-2.5 bg-teal-600 hover:bg-teal-500 disabled:opacity-60 text-white font-bold rounded-xl shadow flex items-center justify-center gap-2"
+                    className="w-full py-2.5 bg-sky-600 hover:bg-sky-500 disabled:opacity-60 text-white font-bold rounded-xl shadow flex items-center justify-center gap-2"
                   >
                     <Send className="w-4 h-4" />
                     {resetStatus === 'sending' ? 'Enviando...' : resetStatus === 'sent' ? 'Correo enviado' : 'Enviar Enlace de Contraseña'}

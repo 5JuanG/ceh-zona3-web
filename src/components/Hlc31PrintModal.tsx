@@ -53,7 +53,7 @@ export const Hlc31PrintModal: React.FC<Hlc31PrintModalProps> = ({
         {/* Top Control Bar (Hidden when Printing) */}
         <div className="bg-slate-900 text-white px-5 py-3 flex items-center justify-between shrink-0 print:hidden">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-teal-600 flex items-center justify-center text-white font-bold text-xs">
+            <div className="w-8 h-8 rounded-lg bg-sky-600 flex items-center justify-center text-white font-bold text-xs">
               HLC
             </div>
             <div>
@@ -69,7 +69,7 @@ export const Hlc31PrintModal: React.FC<Hlc31PrintModalProps> = ({
           <div className="flex items-center gap-2">
             <button
               onClick={handlePrint}
-              className="inline-flex items-center gap-1.5 px-4 py-1.5 bg-teal-600 hover:bg-teal-500 text-white font-bold rounded-xl text-xs shadow transition-colors"
+              className="inline-flex items-center gap-1.5 px-4 py-1.5 bg-sky-600 hover:bg-sky-500 text-white font-bold rounded-xl text-xs shadow transition-colors"
             >
               <Printer className="w-4 h-4" />
               Imprimir / Guardar PDF

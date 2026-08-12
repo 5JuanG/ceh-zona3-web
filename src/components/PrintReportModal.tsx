@@ -59,7 +59,7 @@ export const PrintReportModal: React.FC<PrintReportModalProps> = ({ isOpen, onCl
         {/* Header - Hidden on Print */}
         <div className="bg-slate-900 text-white px-6 py-4 flex items-center justify-between print:hidden">
           <div className="flex items-center gap-2">
-            <Printer className="w-5 h-5 text-teal-400" />
+            <Printer className="w-5 h-5 text-sky-400" />
             <h3 className="font-bold text-base">
               Generar Reporte Imprimible de Médicos
             </h3>
@@ -95,7 +95,7 @@ export const PrintReportModal: React.FC<PrintReportModalProps> = ({ isOpen, onCl
             </button>
             <button
               onClick={handlePrint}
-              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-teal-600 hover:bg-teal-500 text-white font-semibold rounded-lg shadow transition-colors"
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-sky-600 hover:bg-sky-500 text-white font-semibold rounded-lg shadow transition-colors"
             >
               <Printer className="w-4 h-4" />
               Imprimir / Guardar PDF
@@ -111,7 +111,7 @@ export const PrintReportModal: React.FC<PrintReportModalProps> = ({ isOpen, onCl
             <h2 className="text-lg font-bold text-slate-900 uppercase tracking-wide">
               Comité de Enlace con Hospitales (CEH)
             </h2>
-            <h3 className="text-sm font-semibold text-teal-800">
+            <h3 className="text-sm font-semibold text-sky-800">
               Directorio Oficial de Médicos Colaboradores y Consultores
             </h3>
             <p className="text-[11px] text-slate-500">

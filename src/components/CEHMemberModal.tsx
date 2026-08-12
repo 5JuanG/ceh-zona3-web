@@ -230,7 +230,7 @@ export const CEHMemberModal: React.FC<CEHMemberModalProps> = ({
                 placeholder="ej. Juan Pérez G."
                 value={name}
                 onChange={e => setName(e.target.value)}
-                className="w-full p-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-teal-500 focus:border-teal-500 font-semibold text-slate-900 text-sm"
+                className="w-full p-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-sky-500 focus:border-sky-500 font-semibold text-slate-900 text-sm"
               />
             </div>
 
@@ -241,7 +241,7 @@ export const CEHMemberModal: React.FC<CEHMemberModalProps> = ({
               <select
                 value={status}
                 onChange={e => setStatus(e.target.value as 'activo' | 'inactivo')}
-                className="w-full p-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-teal-500 font-semibold text-slate-900 text-xs"
+                className="w-full p-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-sky-500 font-semibold text-slate-900 text-xs"
               >
                 <option value="activo">🟢 Activo</option>
                 <option value="inactivo">🔴 Inactivo / Baja</option>
@@ -259,7 +259,7 @@ export const CEHMemberModal: React.FC<CEHMemberModalProps> = ({
               placeholder="ej. miembro@comite-ceh.org"
               value={email}
               onChange={e => setEmail(e.target.value)}
-              className="w-full p-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-teal-500 font-medium text-slate-900"
+              className="w-full p-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-sky-500 font-medium text-slate-900"
             />
             <p className="mt-1 text-[10.5px] text-slate-400">
               Usa el mismo correo con el que este integrante inicia sesión en el sistema (cuenta creada por el Administrador en Firebase).
@@ -278,7 +278,7 @@ export const CEHMemberModal: React.FC<CEHMemberModalProps> = ({
                 placeholder="ej. Anciano, Siervo Ministerial..."
                 value={role}
                 onChange={e => setRole(e.target.value)}
-                className="w-full p-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-teal-500 text-slate-800 font-medium"
+                className="w-full p-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-sky-500 text-slate-800 font-medium"
               />
             </div>
 
@@ -292,7 +292,7 @@ export const CEHMemberModal: React.FC<CEHMemberModalProps> = ({
                 placeholder="ej. 81 1234 5678"
                 value={phone}
                 onChange={e => setPhone(e.target.value)}
-                className="w-full p-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-teal-500 font-medium text-slate-900"
+                className="w-full p-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-sky-500 font-medium text-slate-900"
               />
             </div>
           </div>
@@ -399,7 +399,7 @@ export const CEHMemberModal: React.FC<CEHMemberModalProps> = ({
               </button>
               <button
                 type="submit"
-                className="px-5 py-2.5 bg-teal-600 hover:bg-teal-500 text-white font-bold rounded-xl shadow-md transition-all flex items-center gap-2"
+                className="px-5 py-2.5 bg-sky-600 hover:bg-sky-500 text-white font-bold rounded-xl shadow-md transition-all flex items-center gap-2"
               >
                 {memberToEdit ? 'Guardar Cambios' : 'Registrar Integrante'}
               </button>

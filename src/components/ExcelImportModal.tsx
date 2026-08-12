@@ -386,7 +386,7 @@ export const ExcelImportModal: React.FC<ExcelImportModalProps> = ({ isOpen, onCl
               {/* Sample Template & Instructions */}
               <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                 <div className="flex items-start gap-2.5">
-                  <HelpCircle className="w-5 h-5 text-teal-600 shrink-0 mt-0.5" />
+                  <HelpCircle className="w-5 h-5 text-sky-600 shrink-0 mt-0.5" />
                   <div>
                     <h4 className="font-bold text-slate-900">¿Desea usar una plantilla en blanco?</h4>
                     <p className="text-slate-500 text-[11px]">
@@ -513,12 +513,12 @@ export const ExcelImportModal: React.FC<ExcelImportModalProps> = ({ isOpen, onCl
                           </td>
                           <td className="p-2.5">
                             <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                              item.mappedDoc.type === 'consultor' ? 'bg-indigo-100 text-indigo-800' : 'bg-teal-100 text-teal-800'
+                              item.mappedDoc.type === 'consultor' ? 'bg-indigo-100 text-indigo-800' : 'bg-sky-100 text-sky-800'
                             }`}>
                               {item.mappedDoc.type === 'consultor' ? 'Consultor' : 'Colaborador'}
                             </span>
                           </td>
-                          <td className="p-2.5 text-teal-800 font-medium">
+                          <td className="p-2.5 text-sky-800 font-medium">
                             {item.mappedDoc.specialty}
                             {item.mappedDoc.subSpecialty && <span className="text-slate-500 font-normal"> ({item.mappedDoc.subSpecialty})</span>}
                           </td>

@@ -89,7 +89,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 {filteredDoctors.map(doc => (
                   <div key={doc.id} className="bg-white p-3 rounded-lg border border-slate-200 text-xs space-y-1">
                     <div className="font-bold text-slate-900">{doc.title} {doc.name}</div>
-                    <div className="text-teal-700 font-medium">{doc.specialty} ({doc.type})</div>
+                    <div className="text-sky-700 font-medium">{doc.specialty} ({doc.type})</div>
                     <div className="text-slate-500 flex items-center gap-1">
                       <PhoneCall className="w-3 h-3 text-slate-400" />
                       {doc.phoneMobile}
@@ -118,15 +118,15 @@ export const Dashboard: React.FC<DashboardProps> = ({
       )}
 
       {/* Welcome & Overview Header */}
-      <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-teal-950 text-white rounded-2xl p-6 shadow-lg border border-slate-800">
+      <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-sky-950 text-white rounded-2xl p-6 shadow-lg border border-slate-800">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-start gap-4">
             <div className="w-14 h-14 rounded-2xl bg-white p-2 text-sky-600 shadow-md border border-slate-700/50 shrink-0 hidden sm:flex items-center justify-center">
               <CehLogo color="#1e88e5" className="w-full h-full" />
             </div>
             <div>
-              <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-teal-500/10 border border-teal-500/20 text-teal-300 text-xs font-semibold mb-2">
-                <CheckCircle2 className="w-3.5 h-3.5 text-teal-400" />
+              <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-sky-500/10 border border-sky-500/20 text-sky-300 text-xs font-semibold mb-2">
+                <CheckCircle2 className="w-3.5 h-3.5 text-sky-400" />
                 Panel de Control del Comité de Enlace
               </div>
               <h2 className="text-2xl font-bold text-white tracking-tight">
@@ -146,9 +146,9 @@ export const Dashboard: React.FC<DashboardProps> = ({
                   else alert(`Error al sincronizar con la Nube:\n${res.error || 'Verifica tu conexión.'}`);
                 });
               }}
-              className="inline-flex items-center gap-2 px-3.5 py-2.5 text-xs font-bold bg-teal-900/90 hover:bg-teal-800 text-teal-200 rounded-xl shadow border border-teal-500/70 transition-all shrink-0"
+              className="inline-flex items-center gap-2 px-3.5 py-2.5 text-xs font-bold bg-sky-900/90 hover:bg-sky-800 text-sky-200 rounded-xl shadow border border-sky-500/70 transition-all shrink-0"
             >
-              <Cloud className="w-4 h-4 text-teal-300 animate-pulse" />
+              <Cloud className="w-4 h-4 text-sky-300 animate-pulse" />
               <span>☁️ Sincronizar Nube</span>
             </button>
 
@@ -176,7 +176,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
             </button>
             <button
               onClick={onOpenDoctorModal}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold bg-teal-600 hover:bg-teal-500 text-white rounded-lg shadow transition-colors"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold bg-sky-600 hover:bg-sky-500 text-white rounded-lg shadow transition-colors"
             >
               <PlusCircle className="w-4 h-4" />
               Nuevo Médico
@@ -185,7 +185,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
               onClick={onOpenVisitModal}
               className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg border border-slate-700 transition-colors"
             >
-              <CalendarCheck className="w-4 h-4 text-teal-400" />
+              <CalendarCheck className="w-4 h-4 text-sky-400" />
               Registrar Visita
             </button>
             <button
@@ -203,7 +203,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
           <div className="bg-slate-800/60 p-3.5 rounded-xl border border-slate-700/50">
             <div className="flex items-center justify-between text-slate-400 mb-1">
               <span className="text-xs font-medium">Médicos Totales</span>
-              <UserCheck className="w-4 h-4 text-teal-400" />
+              <UserCheck className="w-4 h-4 text-sky-400" />
             </div>
             <div className="text-2xl font-bold text-white">{stats.totalDoctors}</div>
             <div className="text-[11px] text-slate-400 mt-0.5">
@@ -297,7 +297,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
             <div className="flex items-center justify-between mb-4">
               <div>
                 <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
-                  <Stethoscope className="w-5 h-5 text-teal-600" />
+                  <Stethoscope className="w-5 h-5 text-sky-600" />
                   Búsqueda Rápida por Especialidad Médica
                 </h3>
                 <p className="text-xs text-slate-500">
@@ -309,7 +309,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                   setSelectedSpecialtyFilter('todas');
                   setActiveTab('doctors');
                 }}
-                className="text-xs text-teal-700 font-semibold hover:underline flex items-center gap-1"
+                className="text-xs text-sky-700 font-semibold hover:underline flex items-center gap-1"
               >
                 Ver directorio completo <ArrowRight className="w-3.5 h-3.5" />
               </button>
@@ -328,10 +328,10 @@ export const Dashboard: React.FC<DashboardProps> = ({
                       setSelectedSpecialtyFilter(spec);
                       setActiveTab('doctors');
                     }}
-                    className="group bg-slate-50 hover:bg-teal-50/80 border border-slate-200 hover:border-teal-300 rounded-xl p-3 cursor-pointer transition-all flex items-center justify-between"
+                    className="group bg-slate-50 hover:bg-sky-50/80 border border-slate-200 hover:border-sky-300 rounded-xl p-3 cursor-pointer transition-all flex items-center justify-between"
                   >
                     <div>
-                      <h4 className="text-sm font-bold text-slate-800 group-hover:text-teal-900">
+                      <h4 className="text-sm font-bold text-slate-800 group-hover:text-sky-900">
                         {spec}
                       </h4>
                       <p className="text-xs text-slate-500 mt-0.5">
@@ -339,10 +339,10 @@ export const Dashboard: React.FC<DashboardProps> = ({
                       </p>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-white text-slate-700 border border-slate-200 group-hover:border-teal-300 group-hover:bg-teal-600 group-hover:text-white transition-colors">
+                      <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-white text-slate-700 border border-slate-200 group-hover:border-sky-300 group-hover:bg-sky-600 group-hover:text-white transition-colors">
                         {count}
                       </span>
-                      <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-teal-600" />
+                      <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-sky-600" />
                     </div>
                   </div>
                 );
@@ -368,7 +368,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
               </div>
               <button
                 onClick={() => setActiveTab('cases')}
-                className="text-xs font-semibold text-teal-700 hover:underline"
+                className="text-xs font-semibold text-sky-700 hover:underline"
               >
                 Ver todos ({cases.length})
               </button>
@@ -479,7 +479,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
               </h3>
               <button
                 onClick={() => setActiveTab('hospitals')}
-                className="text-xs font-semibold text-teal-700 hover:underline"
+                className="text-xs font-semibold text-sky-700 hover:underline"
               >
                 Directorio
               </button>

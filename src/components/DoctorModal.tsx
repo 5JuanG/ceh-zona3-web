@@ -312,7 +312,7 @@ export const DoctorModal: React.FC<DoctorModalProps> = ({ isOpen, onClose, docto
           {/* Modal Header */}
           <div className="bg-slate-900 text-white px-6 py-4 flex items-center justify-between shrink-0">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-teal-600 flex items-center justify-center text-white font-bold text-sm shadow">
+              <div className="w-10 h-10 rounded-xl bg-sky-600 flex items-center justify-center text-white font-bold text-sm shadow">
                 HLC-31
               </div>
               <div>
@@ -395,7 +395,7 @@ export const DoctorModal: React.FC<DoctorModalProps> = ({ isOpen, onClose, docto
               type="button"
               onClick={() => setActiveTab('operativo')}
               className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 ${
-                activeTab === 'operativo' ? 'bg-teal-700 text-white shadow-xs' : 'text-teal-800 bg-teal-50 hover:bg-teal-100'
+                activeTab === 'operativo' ? 'bg-sky-700 text-white shadow-xs' : 'text-sky-800 bg-sky-50 hover:bg-sky-100'
               }`}
             >
               <span>Hospitales / PBM</span>
@@ -409,7 +409,7 @@ export const DoctorModal: React.FC<DoctorModalProps> = ({ isOpen, onClose, docto
             {activeTab === 'hlc31_sec1' && (
               <div className="space-y-4 animate-in fade-in duration-200">
                 <div className="bg-slate-900 text-white p-2.5 rounded-xl font-extrabold text-xs uppercase tracking-wider flex items-center gap-2">
-                  <FileCheck2 className="w-4 h-4 text-teal-400" />
+                  <FileCheck2 className="w-4 h-4 text-sky-400" />
                   SECCIÓN 1: Propósito y Tipo de Contacto
                 </div>
 
@@ -426,7 +426,7 @@ export const DoctorModal: React.FC<DoctorModalProps> = ({ isOpen, onClose, docto
                           name="formPurpose"
                           checked={formPurpose === 'actualizar'}
                           onChange={() => setFormPurpose('actualizar')}
-                          className="text-teal-600 focus:ring-teal-500"
+                          className="text-sky-600 focus:ring-sky-500"
                         />
                         <span>Actualizar información sobre un contacto</span>
                       </label>
@@ -436,7 +436,7 @@ export const DoctorModal: React.FC<DoctorModalProps> = ({ isOpen, onClose, docto
                           name="formPurpose"
                           checked={formPurpose === 'nuevo'}
                           onChange={() => setFormPurpose('nuevo')}
-                          className="text-teal-600 focus:ring-teal-500"
+                          className="text-sky-600 focus:ring-sky-500"
                         />
                         <span>Introducir información sobre un contacto nuevo</span>
                       </label>
@@ -454,7 +454,7 @@ export const DoctorModal: React.FC<DoctorModalProps> = ({ isOpen, onClose, docto
                           type="checkbox"
                           checked={contactTypes.includes('medico_colaborador')}
                           onChange={() => toggleContactType('medico_colaborador')}
-                          className="rounded text-teal-600 focus:ring-teal-500"
+                          className="rounded text-sky-600 focus:ring-sky-500"
                         />
                         <span>Médico colaborador (llene también la Sección 3)</span>
                       </label>
@@ -464,7 +464,7 @@ export const DoctorModal: React.FC<DoctorModalProps> = ({ isOpen, onClose, docto
                           type="checkbox"
                           checked={contactTypes.includes('medico_consultor')}
                           onChange={() => toggleContactType('medico_consultor')}
-                          className="rounded text-teal-600 focus:ring-teal-500"
+                          className="rounded text-sky-600 focus:ring-sky-500"
                         />
                         <span>Médico consultor (llene también la Sección 3)</span>
                       </label>
@@ -474,7 +474,7 @@ export const DoctorModal: React.FC<DoctorModalProps> = ({ isOpen, onClose, docto
                           type="checkbox"
                           checked={contactTypes.includes('testigo_jehova')}
                           onChange={() => toggleContactType('testigo_jehova')}
-                          className="rounded text-teal-600 focus:ring-teal-500"
+                          className="rounded text-sky-600 focus:ring-sky-500"
                         />
                         <span>Testigo de Jehová</span>
                       </label>
@@ -484,7 +484,7 @@ export const DoctorModal: React.FC<DoctorModalProps> = ({ isOpen, onClose, docto
                           type="checkbox"
                           checked={contactTypes.includes('miembro_ceh')}
                           onChange={() => toggleContactType('miembro_ceh')}
-                          className="rounded text-teal-600 focus:ring-teal-500"
+                          className="rounded text-sky-600 focus:ring-sky-500"
                         />
                         <span>Miembro del CEH, miembro del GVP u otro colaborador del CEH</span>
                       </label>
@@ -494,7 +494,7 @@ export const DoctorModal: React.FC<DoctorModalProps> = ({ isOpen, onClose, docto
                           type="checkbox"
                           checked={contactTypes.includes('otro')}
                           onChange={() => toggleContactType('otro')}
-                          className="rounded text-teal-600 focus:ring-teal-500"
+                          className="rounded text-sky-600 focus:ring-sky-500"
                         />
                         <span>Otro (especifique en Comentarios)</span>
                       </label>
@@ -534,7 +534,7 @@ export const DoctorModal: React.FC<DoctorModalProps> = ({ isOpen, onClose, docto
             {activeTab === 'hlc31_sec2' && (
               <div className="space-y-4 animate-in fade-in duration-200">
                 <div className="bg-slate-900 text-white p-2.5 rounded-xl font-extrabold text-xs uppercase tracking-wider flex items-center gap-2">
-                  <UserPlus className="w-4 h-4 text-teal-400" />
+                  <UserPlus className="w-4 h-4 text-sky-400" />
                   SECCIÓN 2: Información de Contacto y Dirección
                 </div>
 
@@ -733,7 +733,7 @@ export const DoctorModal: React.FC<DoctorModalProps> = ({ isOpen, onClose, docto
             {activeTab === 'hlc31_sec3' && (
               <div className="space-y-4 animate-in fade-in duration-200">
                 <div className="bg-slate-900 text-white p-2.5 rounded-xl font-extrabold text-xs uppercase tracking-wider flex items-center gap-2">
-                  <Stethoscope className="w-4 h-4 text-teal-400" />
+                  <Stethoscope className="w-4 h-4 text-sky-400" />
                   SECCIÓN 3: Especialidades y Pacientes Aceptados
                 </div>
 
@@ -833,7 +833,7 @@ export const DoctorModal: React.FC<DoctorModalProps> = ({ isOpen, onClose, docto
                         type="checkbox"
                         checked={acceptedPatientTypes.includes('adulto')}
                         onChange={() => toggleAcceptedPatient('adulto')}
-                        className="rounded text-teal-600 focus:ring-teal-500 w-4 h-4"
+                        className="rounded text-sky-600 focus:ring-sky-500 w-4 h-4"
                       />
                       <span>Adulto</span>
                     </label>
@@ -843,7 +843,7 @@ export const DoctorModal: React.FC<DoctorModalProps> = ({ isOpen, onClose, docto
                         type="checkbox"
                         checked={acceptedPatientTypes.includes('nino')}
                         onChange={() => toggleAcceptedPatient('nino')}
-                        className="rounded text-teal-600 focus:ring-teal-500 w-4 h-4"
+                        className="rounded text-sky-600 focus:ring-sky-500 w-4 h-4"
                       />
                       <span>Niño</span>
                     </label>
@@ -853,7 +853,7 @@ export const DoctorModal: React.FC<DoctorModalProps> = ({ isOpen, onClose, docto
                         type="checkbox"
                         checked={acceptedPatientTypes.includes('neonato')}
                         onChange={() => toggleAcceptedPatient('neonato')}
-                        className="rounded text-teal-600 focus:ring-teal-500 w-4 h-4"
+                        className="rounded text-sky-600 focus:ring-sky-500 w-4 h-4"
                       />
                       <span>Neonato</span>
                     </label>
@@ -877,7 +877,7 @@ export const DoctorModal: React.FC<DoctorModalProps> = ({ isOpen, onClose, docto
             {activeTab === 'hlc31_sec4' && (
               <div className="space-y-4 animate-in fade-in duration-200">
                 <div className="bg-slate-900 text-white p-2.5 rounded-xl font-extrabold text-xs uppercase tracking-wider flex items-center gap-2">
-                  <ShieldAlert className="w-4 h-4 text-teal-400" />
+                  <ShieldAlert className="w-4 h-4 text-sky-400" />
                   SECCIÓN 4: Consentimiento de Datos y Registro CEH
                 </div>
 
@@ -926,8 +926,8 @@ export const DoctorModal: React.FC<DoctorModalProps> = ({ isOpen, onClose, docto
             {/* Operativo: Hospitales & PBM */}
             {activeTab === 'operativo' && (
               <div className="space-y-4 animate-in fade-in duration-200">
-                <div className="bg-teal-900 text-white p-2.5 rounded-xl font-extrabold text-xs uppercase tracking-wider flex items-center gap-2">
-                  <Building2 className="w-4 h-4 text-teal-300" />
+                <div className="bg-sky-900 text-white p-2.5 rounded-xl font-extrabold text-xs uppercase tracking-wider flex items-center gap-2">
+                  <Building2 className="w-4 h-4 text-sky-300" />
                   Detalles Operativos y Afiliación Hospitalaria
                 </div>
 
@@ -943,7 +943,7 @@ export const DoctorModal: React.FC<DoctorModalProps> = ({ isOpen, onClose, docto
                           type="checkbox"
                           checked={selectedHospitalIds.includes(h.id)}
                           onChange={() => toggleHospitalSelection(h.id)}
-                          className="rounded text-teal-600 focus:ring-teal-500"
+                          className="rounded text-sky-600 focus:ring-sky-500"
                         />
                         <span className="truncate">{h.name}</span>
                       </label>
@@ -1027,7 +1027,7 @@ export const DoctorModal: React.FC<DoctorModalProps> = ({ isOpen, onClose, docto
                 </button>
                 <button
                   type="submit"
-                  className="inline-flex items-center gap-1.5 px-5 py-2 font-black text-white bg-teal-600 hover:bg-teal-500 rounded-xl shadow transition-colors"
+                  className="inline-flex items-center gap-1.5 px-5 py-2 font-black text-white bg-sky-600 hover:bg-sky-500 rounded-xl shadow transition-colors"
                 >
                   <Save className="w-4 h-4" />
                   Guardar Formulario

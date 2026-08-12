@@ -273,8 +273,8 @@ export const HospitalModal: React.FC<HospitalModalProps> = ({ isOpen, onClose, h
               </button>
             </div>
             {parseStatusMsg && (
-              <p className="text-[11px] text-teal-800 font-semibold flex items-center gap-1 bg-teal-50 p-1.5 rounded border border-teal-200">
-                <CheckCircle2 className="w-3.5 h-3.5 text-teal-600 shrink-0" />
+              <p className="text-[11px] text-sky-800 font-semibold flex items-center gap-1 bg-sky-50 p-1.5 rounded border border-sky-200">
+                <CheckCircle2 className="w-3.5 h-3.5 text-sky-600 shrink-0" />
                 {parseStatusMsg}
               </p>
             )}
@@ -308,7 +308,7 @@ export const HospitalModal: React.FC<HospitalModalProps> = ({ isOpen, onClose, h
                 type="button"
                 disabled={isExtractingUrl}
                 onClick={handleGeocodeByAddress}
-                className="w-full py-1.5 px-3 bg-teal-700 hover:bg-teal-800 text-white font-bold rounded-lg text-xs flex items-center justify-center gap-1.5 shadow-sm disabled:opacity-50 transition-colors"
+                className="w-full py-1.5 px-3 bg-sky-700 hover:bg-sky-800 text-white font-bold rounded-lg text-xs flex items-center justify-center gap-1.5 shadow-sm disabled:opacity-50 transition-colors"
               >
                 {isExtractingUrl ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Compass className="w-3.5 h-3.5" />}
                 Obtener GPS por Nombre o Dirección

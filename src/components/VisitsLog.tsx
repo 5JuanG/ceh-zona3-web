@@ -204,8 +204,8 @@ export const VisitsLog: React.FC<VisitsLogProps> = ({ onOpenVisitModal }) => {
                 )}
 
                 {visit.outcome && (
-                  <div className="bg-teal-50/60 p-3 rounded-xl border border-teal-100 text-xs text-teal-950">
-                    <strong className="text-teal-900">Resultado / Acuerdo: </strong>
+                  <div className="bg-sky-50/60 p-3 rounded-xl border border-sky-100 text-xs text-sky-950">
+                    <strong className="text-sky-900">Resultado / Acuerdo: </strong>
                     {visit.outcome}
                   </div>
                 )}

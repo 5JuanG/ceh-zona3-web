@@ -78,20 +78,20 @@ export const LoginScreen: React.FC = () => {
     <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-4 relative overflow-hidden font-sans">
 
       {/* Background Subtle Gradient Blobs */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-teal-600/15 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-10 right-10 w-[400px] h-[400px] bg-emerald-600/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-sky-600/15 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute bottom-10 right-10 w-[400px] h-[400px] bg-blue-700/10 rounded-full blur-3xl pointer-events-none" />
 
       <div className="w-full max-w-md relative z-10 space-y-6">
 
         {/* App Title Header */}
         <div className="text-center space-y-2">
-          <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-white p-2.5 text-sky-600 shadow-xl shadow-teal-900/40 border border-teal-400/30 mb-1">
+          <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-white p-2.5 text-sky-600 shadow-xl shadow-sky-900/40 border border-sky-400/30 mb-1">
             <CehLogo color="#1e88e5" className="w-full h-full" />
           </div>
           <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
             Comité de Enlace con Hospitales
           </h1>
-          <p className="text-xs text-teal-400 font-bold uppercase tracking-widest">
+          <p className="text-xs text-sky-400 font-bold uppercase tracking-widest">
             Portal Privado de Administración y Gestión
           </p>
         </div>
@@ -101,7 +101,7 @@ export const LoginScreen: React.FC = () => {
 
           <div className="border-b border-slate-800 pb-4">
             <h2 className="text-lg font-bold text-white flex items-center gap-2">
-              <Lock className="w-5 h-5 text-teal-400" />
+              <Lock className="w-5 h-5 text-sky-400" />
               Ingreso al Sistema CEH
             </h2>
             <p className="text-xs text-slate-400 mt-0.5">
@@ -117,8 +117,8 @@ export const LoginScreen: React.FC = () => {
           )}
 
           {infoMessage && (
-            <div className="bg-teal-950/80 border border-teal-600/50 text-teal-200 p-3.5 rounded-2xl text-xs flex items-start gap-2.5">
-              <CheckCircle2 className="w-4 h-4 text-teal-400 shrink-0 mt-0.5" />
+            <div className="bg-sky-950/80 border border-sky-600/50 text-sky-200 p-3.5 rounded-2xl text-xs flex items-start gap-2.5">
+              <CheckCircle2 className="w-4 h-4 text-sky-400 shrink-0 mt-0.5" />
               <p className="font-medium">{infoMessage}</p>
             </div>
           )}
@@ -138,7 +138,7 @@ export const LoginScreen: React.FC = () => {
                   placeholder="ej. r.garay@comite-ceh.org"
                   value={email}
                   onChange={e => setEmail(e.target.value)}
-                  className="w-full pl-10 pr-3 py-3 rounded-xl bg-slate-950/80 border border-slate-700 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/30 text-white text-xs font-semibold placeholder:text-slate-600"
+                  className="w-full pl-10 pr-3 py-3 rounded-xl bg-slate-950/80 border border-slate-700 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/30 text-white text-xs font-semibold placeholder:text-slate-600"
                 />
               </div>
             </div>
@@ -156,7 +156,7 @@ export const LoginScreen: React.FC = () => {
                   placeholder="••••••••••••"
                   value={password}
                   onChange={e => setPassword(e.target.value)}
-                  className="w-full pl-10 pr-10 py-3 rounded-xl bg-slate-950/80 border border-slate-700 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/30 text-white text-xs font-mono font-bold placeholder:text-slate-600"
+                  className="w-full pl-10 pr-10 py-3 rounded-xl bg-slate-950/80 border border-slate-700 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/30 text-white text-xs font-mono font-bold placeholder:text-slate-600"
                 />
                 <button
                   type="button"
@@ -172,7 +172,7 @@ export const LoginScreen: React.FC = () => {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full py-3.5 bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-500 hover:to-emerald-500 text-white font-extrabold text-sm rounded-xl shadow-lg shadow-teal-950/50 border border-teal-400/30 transition-all flex items-center justify-center gap-2 cursor-pointer mt-2 disabled:opacity-60"
+              className="w-full py-3.5 bg-gradient-to-r from-sky-700 to-blue-700 hover:from-sky-600 hover:to-blue-600 text-white font-extrabold text-sm rounded-xl shadow-lg shadow-sky-950/50 border border-sky-400/30 transition-all flex items-center justify-center gap-2 cursor-pointer mt-2 disabled:opacity-60"
             >
               {isSubmitting ? (
                 <span>Iniciando sesión...</span>
@@ -190,7 +190,7 @@ export const LoginScreen: React.FC = () => {
               type="button"
               onClick={handleForgotPassword}
               disabled={isSendingReset}
-              className="text-xs text-teal-400 hover:text-teal-300 font-semibold underline disabled:opacity-60"
+              className="text-xs text-sky-400 hover:text-sky-300 font-semibold underline disabled:opacity-60"
             >
               {isSendingReset ? 'Enviando...' : '¿Olvidaste tu contraseña?'}
             </button>

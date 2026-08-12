@@ -95,7 +95,7 @@ export const CongregationManager: React.FC<CongregationManagerProps> = ({
   return (
     <div className="space-y-6 pb-12">
       {/* Header Banner */}
-      <div className="bg-gradient-to-r from-slate-900 via-teal-950 to-slate-900 rounded-2xl p-6 text-white shadow-xl border border-slate-800">
+      <div className="bg-gradient-to-r from-slate-900 via-sky-950 to-slate-900 rounded-2xl p-6 text-white shadow-xl border border-slate-800">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <div className="inline-flex items-center gap-2 px-3 py-1 bg-amber-500/20 text-amber-300 border border-amber-500/30 rounded-full text-xs font-semibold mb-3">
@@ -118,9 +118,9 @@ export const CongregationManager: React.FC<CongregationManagerProps> = ({
                   else alert(`Error al sincronizar con la Nube:\n${res.error || 'Verifica tu conexión.'}`);
                 });
               }}
-              className="flex-1 md:flex-initial px-3.5 py-2.5 bg-teal-600 hover:bg-teal-500 text-white font-bold rounded-xl shadow-lg border border-teal-400/50 transition-all flex items-center justify-center gap-2 text-xs cursor-pointer whitespace-nowrap"
+              className="flex-1 md:flex-initial px-3.5 py-2.5 bg-sky-600 hover:bg-sky-500 text-white font-bold rounded-xl shadow-lg border border-sky-400/50 transition-all flex items-center justify-center gap-2 text-xs cursor-pointer whitespace-nowrap"
             >
-              <Cloud className="w-4 h-4 text-teal-200 animate-pulse shrink-0" />
+              <Cloud className="w-4 h-4 text-sky-200 animate-pulse shrink-0" />
               <span>Sincronizar Nube</span>
             </button>
 
@@ -134,7 +134,7 @@ export const CongregationManager: React.FC<CongregationManagerProps> = ({
 
             <button
               onClick={() => setActiveTab('map')}
-              className="px-3.5 py-2.5 bg-slate-800 hover:bg-slate-700 text-teal-300 font-semibold rounded-xl border border-slate-700 transition-colors flex items-center justify-center gap-1.5 text-xs whitespace-nowrap"
+              className="px-3.5 py-2.5 bg-slate-800 hover:bg-slate-700 text-sky-300 font-semibold rounded-xl border border-slate-700 transition-colors flex items-center justify-center gap-1.5 text-xs whitespace-nowrap"
             >
               <MapIcon className="w-4 h-4 shrink-0" />
               <span>Ver Mapa</span>
@@ -159,9 +159,9 @@ export const CongregationManager: React.FC<CongregationManagerProps> = ({
             <span className="text-lg font-bold text-amber-200">{stats.excludedCongregations}</span>
           </div>
 
-          <div className="bg-teal-950/40 p-3 rounded-xl border border-teal-800/40">
-            <span className="text-teal-400 block">Asignadas a Integrantes</span>
-            <span className="text-lg font-bold text-teal-200">{stats.assignedCongregations}</span>
+          <div className="bg-sky-950/40 p-3 rounded-xl border border-sky-800/40">
+            <span className="text-sky-400 block">Asignadas a Integrantes</span>
+            <span className="text-lg font-bold text-sky-200">{stats.assignedCongregations}</span>
           </div>
 
           <div className="bg-slate-800/60 p-3 rounded-xl border border-slate-700/50 col-span-2 sm:col-span-1">
@@ -232,16 +232,16 @@ export const CongregationManager: React.FC<CongregationManagerProps> = ({
           {onOpenMemberWorksheetModal && (
             <button
               onClick={() => onOpenMemberWorksheetModal()}
-              className="flex-1 sm:flex-initial px-3.5 py-2.5 bg-slate-900 hover:bg-slate-800 text-teal-300 font-bold rounded-xl border border-teal-500/40 shadow transition-colors flex items-center justify-center gap-1.5 text-xs whitespace-nowrap cursor-pointer"
+              className="flex-1 sm:flex-initial px-3.5 py-2.5 bg-slate-900 hover:bg-slate-800 text-sky-300 font-bold rounded-xl border border-sky-500/40 shadow transition-colors flex items-center justify-center gap-1.5 text-xs whitespace-nowrap cursor-pointer"
             >
-              <FileText className="w-4 h-4 text-teal-400 shrink-0" />
+              <FileText className="w-4 h-4 text-sky-400 shrink-0" />
               <span>Hoja de Trabajo PDF</span>
             </button>
           )}
 
           <button
             onClick={() => handleOpenMemberModal()}
-            className="flex-1 sm:flex-initial px-3.5 py-2.5 bg-teal-600 hover:bg-teal-500 text-white font-bold rounded-xl shadow transition-colors flex items-center justify-center gap-1.5 text-xs whitespace-nowrap cursor-pointer"
+            className="flex-1 sm:flex-initial px-3.5 py-2.5 bg-sky-600 hover:bg-sky-500 text-white font-bold rounded-xl shadow transition-colors flex items-center justify-center gap-1.5 text-xs whitespace-nowrap cursor-pointer"
           >
             <UserPlus className="w-4 h-4 shrink-0" />
             <span>Registrar Integrante</span>
@@ -453,7 +453,7 @@ export const CongregationManager: React.FC<CongregationManagerProps> = ({
           <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between gap-4">
             <div>
               <h3 className="font-extrabold text-slate-900 text-sm flex items-center gap-2">
-                <Users className="w-4 h-4 text-teal-600" />
+                <Users className="w-4 h-4 text-sky-600" />
                 Directorio e Integrantes del Comité de Enlace ({cehMembers.length})
               </h3>
               <p className="text-xs text-slate-500 mt-0.5">
@@ -463,7 +463,7 @@ export const CongregationManager: React.FC<CongregationManagerProps> = ({
             
             <button
               onClick={() => handleOpenMemberModal()}
-              className="px-4 py-2 bg-teal-600 hover:bg-teal-500 text-white font-bold rounded-xl shadow transition-all flex items-center gap-2 text-xs shrink-0"
+              className="px-4 py-2 bg-sky-600 hover:bg-sky-500 text-white font-bold rounded-xl shadow transition-all flex items-center gap-2 text-xs shrink-0"
             >
               <UserPlus className="w-4 h-4" />
               + Registrar Nuevo Integrante
@@ -598,7 +598,7 @@ export const CongregationManager: React.FC<CongregationManagerProps> = ({
                         <span className="font-bold text-slate-700">
                           Territorios Asignados ({memberCongs.length})
                         </span>
-                        <span className="text-[11px] text-teal-600 font-semibold">
+                        <span className="text-[11px] text-sky-600 font-semibold">
                           Zona 3
                         </span>
                       </div>

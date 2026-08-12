@@ -64,7 +64,8 @@ interface AppContextType {
   // Backup & Restore
   exportDataJSON: () => void;
   importDataJSON: (jsonString: string) => boolean;
-  resetToDefaultData: () => void;
+  // resetToDefaultData fue retirada: sobrescribía la base de datos en la
+  // nube con datos de ejemplo sin dejarlo suficientemente claro al usuario.
 
   // Quick stats
   stats: {
@@ -841,24 +842,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
-  const resetToDefaultData = () => {
-    setDoctors(INITIAL_DOCTORS);
-    setHospitals(INITIAL_HOSPITALS);
-    setVisits(INITIAL_VISITS);
-    setCases(INITIAL_CASES);
-    setWorksheets([]);
-    setCehMembers(INITIAL_CEH_MEMBERS);
-    setCongregations(INITIAL_CONGREGATIONS);
-    localStorage.removeItem(STORAGE_KEY_DOCTORS);
-    localStorage.removeItem(STORAGE_KEY_HOSPITALS);
-    localStorage.removeItem(STORAGE_KEY_VISITS);
-    localStorage.removeItem(STORAGE_KEY_CASES);
-    localStorage.removeItem(STORAGE_KEY_WORKSHEETS);
-    localStorage.removeItem(STORAGE_KEY_CEH_MEMBERS);
-    localStorage.removeItem(STORAGE_KEY_CONGREGATIONS);
-    setTimeout(() => { syncAllToCloud(); }, 100);
-  };
-
   // Calculate statistics
   const validTerritoryCongs = congregations.filter(c => !c.isExcludedFromTerritory);
   const excludedCongs = congregations.filter(c => c.isExcludedFromTerritory);
@@ -923,7 +906,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         resetCongregationAssignments,
         exportDataJSON,
         importDataJSON,
-        resetToDefaultData,
         stats
       }}
     >
