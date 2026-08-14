@@ -225,15 +225,9 @@ export const CEHMemberWorksheetModal: React.FC<CEHMemberWorksheetModalProps> = (
     mapInstanceRef.current = map;
 
     // Tile Layer with crossOrigin for canvas export
-    // CARTO en vez de OpenStreetMap: sus mosaicos sí permiten ser leídos
-    // desde un <canvas> (CORS habilitado), que es justo lo que necesita
-    // html2canvas para poder capturar el mapa al generar el PDF. Con los
-    // mosaicos de OSM el navegador "mancha" el canvas y la captura queda en
-    // blanco.
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 18,
-      crossOrigin: 'anonymous',
-      subdomains: 'abcd'
+      crossOrigin: 'anonymous'
     }).addTo(map);
 
     const bounds = L.latLngBounds([]);
@@ -418,32 +412,11 @@ export const CEHMemberWorksheetModal: React.FC<CEHMemberWorksheetModalProps> = (
   ];
 
   const handleDownloadPdf = async () => {
-    const scrollContainer = document.getElementById('worksheet-printable-area');
-    const originalOverflow = scrollContainer?.style.overflow || '';
-    const originalMaxHeight = scrollContainer?.style.maxHeight || '';
-
     setGeneratingPdf(true);
     try {
-      // Se quita temporalmente el scroll interno del documento: si una
-      // sección quedaba fuera del área visible por el desplazamiento, la
-      // captura salía en blanco o recortada. Al desactivar el scroll,
-      // TODO el contenido se despliega de forma completa y estable antes
-      // de fotografiar cada página.
-      if (scrollContainer) {
-        scrollContainer.style.overflow = 'visible';
-        scrollContainer.style.maxHeight = 'none';
-      }
-
       if (mapInstanceRef.current) {
         mapInstanceRef.current.invalidateSize();
       }
-
-      // Un par de frames + una pausa corta para que el navegador termine de
-      // recalcular el layout (y el mapa termine de pintar sus mosaicos)
-      // antes de empezar a capturar.
-      await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
-      if (mapInstanceRef.current) mapInstanceRef.current.invalidateSize();
-      await new Promise(resolve => setTimeout(resolve, 300));
 
       const pdf = new jsPDF({
         orientation: 'portrait',
@@ -454,68 +427,63 @@ export const CEHMemberWorksheetModal: React.FC<CEHMemberWorksheetModalProps> = (
       const imgWidth = 210;
       const pageHeight = 297;
       let isFirstPage = true;
-      let sectionsFailed = 0;
 
       for (const pageId of PAGE_IDS) {
         const el = document.getElementById(pageId);
         if (!el) continue;
 
+        let canvas: HTMLCanvasElement;
         try {
-          const canvas = await html2canvas(el, {
+          // No usamos allowTaint: si un tile del mapa no tiene cabeceras CORS,
+          // preferimos que html2canvas lo omita (con useCORS) a que "contamine"
+          // el canvas y rompa toDataURL() más abajo para TODO el PDF.
+          canvas = await html2canvas(el, {
             scale: 2,
             useCORS: true,
             logging: false,
             backgroundColor: '#ffffff'
           });
+        } catch (pageError) {
+          console.error(`No se pudo capturar la sección "${pageId}", se omite:`, pageError);
+          continue; // seguimos con las demás secciones en vez de abortar todo el PDF
+        }
 
-          const imgData = canvas.toDataURL('image/png');
-          const imgHeight = (canvas.height * imgWidth) / canvas.width;
-          let heightLeft = imgHeight;
-          let position = 0;
+        let imgData: string;
+        try {
+          imgData = canvas.toDataURL('image/png');
+        } catch (taintError) {
+          console.error(`Canvas contaminado en "${pageId}", se omite esta sección:`, taintError);
+          continue;
+        }
 
-          if (!isFirstPage) pdf.addPage();
-          isFirstPage = false;
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+        let heightLeft = imgHeight;
+        let position = 0;
 
+        if (!isFirstPage) pdf.addPage();
+        isFirstPage = false;
+
+        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+
+        // Si el contenido de esta sección es más largo que una hoja A4
+        // (por ejemplo, una lista larga de hospitales), continúa en tantas
+        // páginas adicionales como haga falta antes de pasar a la siguiente
+        // sección.
+        while (heightLeft >= 0) {
+          position = heightLeft - imgHeight;
+          pdf.addPage();
           pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
           heightLeft -= pageHeight;
-
-          // Si el contenido de esta sección es más largo que una hoja A4
-          // (por ejemplo, una lista larga de hospitales), continúa en
-          // tantas páginas adicionales como haga falta antes de pasar a la
-          // siguiente sección.
-          while (heightLeft >= 0) {
-            position = heightLeft - imgHeight;
-            pdf.addPage();
-            pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-            heightLeft -= pageHeight;
-          }
-        } catch (sectionError) {
-          // Si UNA sección falla (ej. el mapa por conexión lenta), se
-          // omite esa página en vez de cancelar todo el documento.
-          console.error(`Error al capturar la sección "${pageId}":`, sectionError);
-          sectionsFailed++;
         }
-      }
-
-      if (isFirstPage) {
-        // Ninguna sección pudo capturarse
-        throw new Error('No se pudo generar ninguna página del documento.');
       }
 
       const fileName = `Hoja_de_Trabajo_CEH_${selectedMember ? selectedMember.name.replace(/\s+/g, '_') : 'Miembro'}.pdf`;
       pdf.save(fileName);
-
-      if (sectionsFailed > 0) {
-        alert(`El PDF se descargó, pero ${sectionsFailed} sección(es) no se pudieron capturar correctamente (revisa tu conexión e inténtalo de nuevo si hace falta).`);
-      }
     } catch (error) {
       console.error('Error al generar PDF:', error);
       alert('Se produjo un error al generar el PDF. Puedes usar el botón "Imprimir / Guardar PDF" como alternativa.');
     } finally {
-      if (scrollContainer) {
-        scrollContainer.style.overflow = originalOverflow;
-        scrollContainer.style.maxHeight = originalMaxHeight;
-      }
       setGeneratingPdf(false);
     }
   };
@@ -632,8 +600,10 @@ export const CEHMemberWorksheetModal: React.FC<CEHMemberWorksheetModalProps> = (
         }
         @media print {
           body { background: white !important; color: black !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+          body * { visibility: hidden !important; }
+          #worksheet-printable-area, #worksheet-printable-area * { visibility: visible !important; }
+          #worksheet-printable-area { position: absolute !important; top: 0; left: 0; width: 100% !important; padding: 0 !important; margin: 0 !important; }
           .print\\:hidden { display: none !important; }
-          #worksheet-printable-area { width: 100% !important; padding: 0 !important; margin: 0 !important; }
           .leaflet-container { width: 100% !important; height: 380px !important; display: block !important; }
           .page-break { page-break-before: always; }
         }
@@ -716,6 +686,15 @@ export const CEHMemberWorksheetModal: React.FC<CEHMemberWorksheetModalProps> = (
             >
               <Printer className="w-4 h-4" />
               <span>Imprimir / Guardar PDF</span>
+            </button>
+
+            <button
+              onClick={onClose}
+              className="px-3 py-1.5 bg-rose-100 hover:bg-rose-200 text-rose-800 font-bold rounded-xl transition-colors flex items-center gap-1 cursor-pointer"
+              title="Cerrar documento"
+            >
+              <X className="w-4 h-4" />
+              <span>Cerrar</span>
             </button>
           </div>
         </div>
