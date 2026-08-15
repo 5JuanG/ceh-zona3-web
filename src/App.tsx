@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { BrowserRouter as Router } from 'react-router-dom'; // <-- Contenedor seguro añadido
 import { AppProvider, useApp } from './context/AppContext';
 import { auth, logout } from './lib/firebase';
 import { onAuthStateChanged, User } from 'firebase/auth';
@@ -85,7 +86,7 @@ function MainLayout({ currentUser, onLogout }: MainLayoutProps) {
 
   const handleOpenWorksheetModal = (ws?: EmergencyWorksheet) => {
     setWorksheetToEdit(ws);
-    setWorksheetModalOpen(true);
+    setWorksheetOpen(true);
   };
 
   const handleFilterDoctorsByHospital = (hospitalId: string) => {
@@ -95,7 +96,7 @@ function MainLayout({ currentUser, onLogout }: MainLayoutProps) {
   return (
     <div className="min-h-screen bg-slate-100 font-sans text-slate-900 flex flex-col antialiased">
       
-      {/* Header */}
+      {/* Header — Ahora convive de forma segura dentro del Router */}
       <Header 
         onOpenPrintModal={() => setPrintModalOpen(true)}
         onOpenExcelModal={() => setExcelModalOpen(true)}
@@ -225,24 +226,35 @@ function AppContent() {
   const { cehMembers } = useApp();
   const [authUser, setAuthUser] = useState<User | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
+  const [currentUser, setCurrentUser] = useState<{ name: string; role: string; email?: string; photoUrl?: string } | null>(null);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      // Ignora sesiones anónimas residuales: solo cuentan los logins reales.
-      setAuthUser(user && !user.isAnonymous ? user : null);
+      setAuthUser(user);
+      if (user) {
+        // Enlace del perfil del miembro autenticado
+        const member = cehMembers.find(m => m.email?.toLowerCase() === user.email?.toLowerCase());
+        setCurrentUser(member ? {
+          name: member.nombre,
+          role: member.rol,
+          email: member.email
+        } : {
+          name: user.displayName || 'Usuario',
+          role: 'miembro',
+          email: user.email || undefined
+        });
+      } else {
+        setCurrentUser(null);
+      }
       setAuthLoading(false);
     });
-    return unsubscribe;
-  }, []);
-
-  const handleLogout = () => {
-    logout().catch(err => console.error('Error al cerrar sesión:', err));
-  };
+    return () => unsubscribe();
+  }, [cehMembers]);
 
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
-        <p className="text-slate-400 text-sm">Cargando…</p>
+      <div className="min-h-screen bg-slate-900 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
       </div>
     );
   }
@@ -251,29 +263,18 @@ function AppContent() {
     return <LoginScreen />;
   }
 
-  // Empareja la cuenta autenticada con un miembro registrado del CEH para
-  // mostrar su nombre/rol/foto. Si no hay coincidencia (ej. cuenta nueva
-  // sin registrar aún en el directorio), se muestra el correo tal cual.
-  const matchedMember = cehMembers.find(
-    m => m.email && m.email.toLowerCase() === (authUser.email || '').toLowerCase()
-  );
-
-  const currentUser = {
-    name: matchedMember?.name || authUser.displayName || authUser.email || 'Usuario',
-    role: matchedMember?.role || 'Miembro CEH',
-    email: authUser.email || undefined,
-    photoUrl: matchedMember?.photoUrl,
-  };
-
-  return <MainLayout currentUser={currentUser} onLogout={handleLogout} />;
+  return <MainLayout currentUser={currentUser} onLogout={logout} />;
 }
 
+// === COMPONENTE EXPORTADO COMPLETO ===
 export default function App() {
   return (
     <ErrorBoundary>
-      <AppProvider>
-        <AppContent />
-      </AppProvider>
+      <Router>
+        <AppProvider>
+          <AppContent />
+        </AppProvider>
+      </Router>
     </ErrorBoundary>
   );
 }
