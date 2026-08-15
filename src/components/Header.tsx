@@ -1,28 +1,36 @@
 import React, { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { useApp } from '../context/AppContext';
 
-// Componente auxiliar interno para proteger el menú de navegación contra fallas de inicialización
-const HeaderContent: React.FC = () => {
+interface HeaderProps {
+  onOpenPrintModal: () => void;
+  onOpenExcelModal: () => void;
+  onOpenMemberWorksheetModal: (memberId?: string) => void;
+  currentUser: { name: string; role: string; email?: string; photoUrl?: string } | null;
+  onLogout: () => void;
+}
+
+export const Header: React.FC<HeaderProps> = ({
+  onOpenPrintModal,
+  onOpenExcelModal,
+  onOpenMemberWorksheetModal,
+  currentUser,
+  onLogout
+}) => {
   const [isOpen, setIsOpen] = useState(false);
-  let location;
-  
-  // Intento seguro de lectura de ruta activa para evitar el crasheo de useLocation
-  try {
-    location = useLocation();
-  } catch (e) {
-    location = { pathname: '/' };
-  }
+  const { activeTab, setActiveTab } = useApp();
 
   const closeMenu = () => setIsOpen(false);
 
-  const linkClass = (path: string) => 
-    `text-sm font-medium transition-colors hover:text-white ${
-      location.pathname === path ? 'text-blue-400 font-semibold' : 'text-slate-400'
+  // Validador de pestañas activas para resaltar el menú de escritorio
+  const linkClass = (tabId: string) => 
+    `text-sm font-medium transition-colors cursor-pointer hover:text-white ${
+      activeTab === tabId ? 'text-blue-400 font-semibold border-b-2 border-blue-500 pb-1' : 'text-slate-400'
     }`;
 
-  const mobileLinkClass = (path: string) => 
-    `py-2.5 block border-b border-slate-900 text-base transition-colors ${
-      location.pathname === path ? 'text-blue-400 font-bold' : 'text-slate-300'
+  // Validador de pestañas activas para resaltar el menú móvil
+  const mobileLinkClass = (tabId: string) => 
+    `py-2.5 block border-b border-slate-900 text-base cursor-pointer transition-colors ${
+      activeTab === tabId ? 'text-blue-400 font-bold bg-slate-900/40 px-2 rounded' : 'text-slate-300 hover:text-white'
     }`;
 
   return (
@@ -30,20 +38,39 @@ const HeaderContent: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           
-          <div className="flex items-center">
-            <Link to="/" className="font-bold text-lg tracking-tight hover:text-slate-200 transition">
+          {/* Título Principal */}
+          <div className="flex items-center cursor-pointer" onClick={() => setActiveTab('dashboard')}>
+            <span className="font-bold text-base sm:text-lg tracking-tight hover:text-slate-200 transition">
               Comité de Enlace con Hospitales
-            </Link>
+            </span>
           </div>
 
-          {/* Menú para Computadoras */}
+          {/* Menú de Escritorio (Navegación basada en Pestañas Reales) */}
           <nav className="hidden md:flex items-center gap-6">
-            <Link to="/" className={linkClass('/')}>Inicio</Link>
-            <Link to="/medicos" className={linkClass('/medicos')}>Médicos</Link>
-            <Link to="/congregacion" className={linkClass('/congregacion')}>Congregación y CEH</Link>
+            <button onClick={() => setActiveTab('dashboard')} className={linkClass('dashboard')}>Inicio</button>
+            <button onClick={() => setActiveTab('doctors')} className={linkClass('doctors')}>Médicos</button>
+            <button onClick={() => setActiveTab('congregations')} className={linkClass('congregations')}>Congregación y CEH</button>
+            
+            {/* Mostrar botón Admin solo si el rol lo permite */}
+            {currentUser?.role === 'admin' && (
+              <button onClick={() => setActiveTab('admin')} className={linkClass('admin')}>Panel Admin</button>
+            )}
           </nav>
 
-          {/* Botón Hamburguesa fijo para Celulares */}
+          {/* Bloque de Usuario y Herramientas */}
+          <div className="hidden md:flex items-center gap-4">
+            <button 
+              onClick={() => onOpenMemberWorksheetModal()}
+              className="text-xs bg-slate-800 hover:bg-slate-700 px-3 py-1.5 rounded-lg font-medium transition"
+            >
+              Hoja de Trabajo
+            </button>
+            <button onClick={onLogout} className="text-xs text-red-400 hover:text-red-300 font-medium">
+              Salir
+            </button>
+          </div>
+
+          {/* Botón de Hamburguesa Responsivo */}
           <div className="flex md:hidden">
             <button
               onClick={() => setIsOpen(!isOpen)}
@@ -63,32 +90,46 @@ const HeaderContent: React.FC = () => {
         </div>
       </div>
 
-      {/* Desplegable móvil con navegación interna corregida */}
+      {/* Menú Desplegable Lateral para Dispositivos Móviles */}
       {isOpen && (
-        <div className="md:hidden fixed inset-0 z-50 flex justify-end bg-slate-900/60 backdrop-blur-sm">
-          <div className="w-64 bg-slate-950 h-full p-6 shadow-2xl border-l border-slate-800 flex flex-col space-y-4">
-            <div className="flex items-center justify-between mb-4">
-              <span className="font-bold text-slate-200">Panel de Control</span>
-              <button onClick={closeMenu} className="text-slate-400 hover:text-white">
-                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
+        <div className="md:hidden fixed inset-0 z-50 flex justify-end bg-black/60 backdrop-blur-sm">
+          <div className="w-64 bg-slate-950 h-full p-6 shadow-2xl border-l border-slate-800 flex flex-col justify-between">
+            <div className="flex flex-col space-y-4">
+              <div className="flex items-center justify-between mb-4">
+                <span className="font-bold text-slate-200">Panel CEH</span>
+                <button onClick={closeMenu} className="text-slate-400 hover:text-white">
+                  <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              
+              <nav className="flex flex-col space-y-1">
+                <button onClick={() => { setActiveTab('dashboard'); closeMenu(); }} className={mobileLinkClass('dashboard')}>Inicio</button>
+                <button onClick={() => { setActiveTab('doctors'); closeMenu(); }} className={mobileLinkClass('doctors')}>Médicos</button>
+                <button onClick={() => { setActiveTab('congregations'); closeMenu(); }} className={mobileLinkClass('congregations')}>Congregación y CEH</button>
+                
+                {currentUser?.role === 'admin' && (
+                  <button onClick={() => { setActiveTab('admin'); closeMenu(); }} className={mobileLinkClass('admin')}>Panel Admin</button>
+                )}
+              </nav>
+            </div>
+
+            {/* Acciones del menú inferior móvil */}
+            <div className="flex flex-col space-y-3 border-t border-slate-800 pt-4">
+              <button 
+                onClick={() => { onOpenMemberWorksheetModal(); closeMenu(); }}
+                className="w-full text-center bg-blue-600 hover:bg-blue-700 py-2 rounded-lg text-sm font-medium transition"
+              >
+                Generar Hoja Trabajo
+              </button>
+              <button onClick={() => { onLogout(); closeMenu(); }} className="w-full text-center bg-slate-900 text-red-400 py-2 rounded-lg text-sm font-medium">
+                Cerrar Sesión
               </button>
             </div>
-            
-            <nav className="flex flex-col">
-              <Link to="/" onClick={closeMenu} className={mobileLinkClass('/')}>Inicio</Link>
-              <Link to="/medicos" onClick={closeMenu} className={mobileLinkClass('/medicos')}>Médicos</Link>
-              <Link to="/congregacion" onClick={closeMenu} className={mobileLinkClass('/congregacion')}>Congregación y CEH</Link>
-            </nav>
           </div>
         </div>
       )}
     </header>
   );
-};
-
-// Componente Exportado Principal protegido con fallback seguro
-export const Header: React.FC = () => {
-  return <HeaderContent />;
 };

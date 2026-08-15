@@ -3,10 +3,10 @@ import React from 'react';
 interface CEHMemberWorksheetModalProps {
   isOpen: boolean;
   onClose: () => void;
-  memberData: any;
+  initialMemberId: string | null;
 }
 
-export const CEHMemberWorksheetModal: React.FC<CEHMemberWorksheetModalProps> = ({ isOpen, onClose, memberData }) => {
+export const CEHMemberWorksheetModal: React.FC<CEHMemberWorksheetModalProps> = ({ isOpen, onClose, initialMemberId }) => {
   if (!isOpen) return null;
 
   const handleDescargarPDF = async () => {
@@ -14,13 +14,13 @@ export const CEHMemberWorksheetModal: React.FC<CEHMemberWorksheetModalProps> = (
     const element = document.getElementById('hoja-trabajo-content');
     
     if (!element) {
-      alert('Error: No se encontró el contenido del reporte.');
+      alert('Error: No se encontró el contenedor de la hoja de trabajo.');
       return;
     }
 
     const opt = {
       margin:       10,
-      filename:     `Hoja_Trabajo_${memberData?.nombre || 'Miembro'}.pdf`,
+      filename:     `Hoja_Trabajo_CEH_${initialMemberId || 'Miembro'}.pdf`,
       image:        { type: 'jpeg', quality: 0.98 },
       html2canvas:  { scale: 2, useCORS: true },
       jsPDF:        { unit: 'mm', format: 'letter', orientation: 'portrait' }
@@ -33,7 +33,7 @@ export const CEHMemberWorksheetModal: React.FC<CEHMemberWorksheetModalProps> = (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 overflow-y-auto">
       <div className="bg-slate-900 rounded-xl max-w-3xl w-full shadow-2xl flex flex-col max-h-[90vh] border border-slate-800">
         
-        {/* Encabezado del modal con botón de descarga verde */}
+        {/* Encabezado con Botón Verde de Descarga */}
         <div className="p-4 border-b border-slate-800 flex justify-between items-center bg-slate-950 rounded-t-xl">
           <h3 className="font-bold text-slate-200">Hoja de Trabajo Individual</h3>
           <div className="flex items-center gap-2">
@@ -49,7 +49,7 @@ export const CEHMemberWorksheetModal: React.FC<CEHMemberWorksheetModalProps> = (
           </div>
         </div>
 
-        {/* Documento Interno Certificado */}
+        {/* Contenido Imprimible Formato Carta */}
         <div className="p-6 overflow-y-auto bg-slate-900 flex-1">
           <div id="hoja-trabajo-content" className="bg-white p-10 shadow-lg mx-auto max-w-[215mm] min-h-[279mm] text-slate-900 rounded-sm">
             <div className="text-center border-b-2 border-slate-900 pb-4 mb-6">
@@ -57,16 +57,14 @@ export const CEHMemberWorksheetModal: React.FC<CEHMemberWorksheetModalProps> = (
               <p className="text-sm font-semibold text-slate-600">Zona 3 — Monterrey, N.L.</p>
             </div>
             
-            <div className="space-y-6">
+            <div className="space-y-4">
               <div>
-                <h4 className="text-xs uppercase tracking-wider text-slate-400 font-bold mb-1">Integrante del Comité:</h4>
-                <p className="text-lg font-bold text-slate-900">{memberData?.nombre || 'Nombre no disponible'}</p>
-                <p className="text-sm text-slate-600">{memberData?.email || 'Correo no registrado'}</p>
+                <h4 className="text-xs uppercase tracking-wider text-slate-400 font-bold">ID del Miembro de Control:</h4>
+                <p className="text-lg font-bold text-slate-900">{initialMemberId || 'General / Todo el Comité'}</p>
               </div>
-
-              <div className="border-t border-gray-200 pt-4">
-                <h4 className="text-xs uppercase tracking-wider text-slate-400 font-bold mb-2">Actividades / Tareas Pendientes:</h4>
-                <p className="text-sm text-gray-500 italic">Visitas programadas e informes de asistencia hospitalaria...</p>
+              <div className="border-t border-gray-100 pt-4">
+                <h4 className="text-xs uppercase tracking-wider text-slate-400 font-bold mb-2">Asignaciones Hospitalarias Recientes:</h4>
+                <p className="text-sm text-gray-500 italic">Reporte de visitas y médicos colaboradores validados por la sucursal.</p>
               </div>
             </div>
           </div>
