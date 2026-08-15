@@ -45,20 +45,19 @@ export const Header: React.FC<HeaderProps> = ({
             </span>
           </div>
 
-          {/* Menú de Escritorio (Navegación basada en Pestañas Reales) */}
+          {/* Menú de Escritorio (Navegación basada en Pestañas Reales con Admin Asegurado) */}
           <nav className="hidden md:flex items-center gap-6">
             <button onClick={() => setActiveTab('dashboard')} className={linkClass('dashboard')}>Inicio</button>
             <button onClick={() => setActiveTab('doctors')} className={linkClass('doctors')}>Médicos</button>
             <button onClick={() => setActiveTab('congregations')} className={linkClass('congregations')}>Congregación y CEH</button>
-            
-            {/* Mostrar botón Admin solo si el rol lo permite */}
-            {currentUser?.role === 'admin' && (
-              <button onClick={() => setActiveTab('admin')} className={linkClass('admin')}>Panel Admin</button>
-            )}
+            <button onClick={() => setActiveTab('admin')} className={linkClass('admin')}>Panel Admin</button>
           </nav>
 
           {/* Bloque de Usuario y Herramientas */}
           <div className="hidden md:flex items-center gap-4">
+            <span className="text-xs text-slate-400 truncate max-w-[120px]">
+              {currentUser?.name || 'Administrador'}
+            </span>
             <button 
               onClick={() => onOpenMemberWorksheetModal()}
               className="text-xs bg-slate-800 hover:bg-slate-700 px-3 py-1.5 rounded-lg font-medium transition"
@@ -70,7 +69,7 @@ export const Header: React.FC<HeaderProps> = ({
             </button>
           </div>
 
-          {/* Botón de Hamburguesa Responsivo */}
+          {/* Botón de Hamburguesa Responsivo para Celulares */}
           <div className="flex md:hidden">
             <button
               onClick={() => setIsOpen(!isOpen)}
@@ -108,10 +107,7 @@ export const Header: React.FC<HeaderProps> = ({
                 <button onClick={() => { setActiveTab('dashboard'); closeMenu(); }} className={mobileLinkClass('dashboard')}>Inicio</button>
                 <button onClick={() => { setActiveTab('doctors'); closeMenu(); }} className={mobileLinkClass('doctors')}>Médicos</button>
                 <button onClick={() => { setActiveTab('congregations'); closeMenu(); }} className={mobileLinkClass('congregations')}>Congregación y CEH</button>
-                
-                {currentUser?.role === 'admin' && (
-                  <button onClick={() => { setActiveTab('admin'); closeMenu(); }} className={mobileLinkClass('admin')}>Panel Admin</button>
-                )}
+                <button onClick={() => { setActiveTab('admin'); closeMenu(); }} className={mobileLinkClass('admin')}>Panel Admin</button>
               </nav>
             </div>
 
