@@ -20,7 +20,7 @@ import {
 } from 'lucide-react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import html2canvas from 'html2canvas';
+import html2canvas from 'html2canvas-pro';
 import jsPDF from 'jspdf';
 import { getCityFallbackCoordinates, sanitizeHospitalCoordinates, parseGoogleMapsUrl } from '../utils/googleMapsParser';
 import { CONGREGATION_BOUNDARIES } from '../data/congregationBoundaries';
