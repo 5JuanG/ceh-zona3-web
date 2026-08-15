@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router } from 'react-router-dom'; // <-- Contenedor seguro añadido
+import { BrowserRouter as Router } from 'react-router-dom';
 import { AppProvider, useApp } from './context/AppContext';
 import { auth, logout } from './lib/firebase';
 import { onAuthStateChanged, User } from 'firebase/auth';
@@ -84,9 +84,10 @@ function MainLayout({ currentUser, onLogout }: MainLayoutProps) {
     setCaseModalOpen(true);
   };
 
+  // PARCHE CORREGIDO: Abre el modal usando el nombre exacto de la variable de estado
   const handleOpenWorksheetModal = (ws?: EmergencyWorksheet) => {
     setWorksheetToEdit(ws);
-    setWorksheetOpen(true);
+    setWorksheetModalOpen(true);
   };
 
   const handleFilterDoctorsByHospital = (hospitalId: string) => {
@@ -96,7 +97,6 @@ function MainLayout({ currentUser, onLogout }: MainLayoutProps) {
   return (
     <div className="min-h-screen bg-slate-100 font-sans text-slate-900 flex flex-col antialiased">
       
-      {/* Header — Ahora convive de forma segura dentro del Router */}
       <Header 
         onOpenPrintModal={() => setPrintModalOpen(true)}
         onOpenExcelModal={() => setExcelModalOpen(true)}
@@ -105,7 +105,6 @@ function MainLayout({ currentUser, onLogout }: MainLayoutProps) {
         onLogout={onLogout}
       />
 
-      {/* Main Container */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {activeTab === 'dashboard' && (
           <Dashboard
@@ -161,7 +160,6 @@ function MainLayout({ currentUser, onLogout }: MainLayoutProps) {
         )}
       </main>
 
-      {/* Footer */}
       <footer className="bg-slate-900 border-t border-slate-800 text-slate-400 py-6 text-center text-xs space-y-1">
         <p className="font-semibold text-slate-300">
           Plataforma de Trabajo del Comité de Enlace con Hospitales
@@ -171,53 +169,15 @@ function MainLayout({ currentUser, onLogout }: MainLayoutProps) {
         </p>
       </footer>
 
-      {/* Dialog Modals */}
-      <DoctorModal
-        isOpen={doctorModalOpen}
-        onClose={() => setDoctorModalOpen(false)}
-        doctorToEdit={doctorToEdit}
-      />
-
-      <HospitalModal
-        isOpen={hospitalModalOpen}
-        onClose={() => setHospitalModalOpen(false)}
-        hospitalToEdit={hospitalToEdit}
-      />
-
-      <VisitModal
-        isOpen={visitModalOpen}
-        onClose={() => setVisitModalOpen(false)}
-        visitToEdit={visitToEdit}
-      />
-
-      <CaseModal
-        isOpen={caseModalOpen}
-        onClose={() => setCaseModalOpen(false)}
-        caseToEdit={caseToEdit}
-      />
-
-      <EmergencyWorksheetModal
-        isOpen={worksheetModalOpen}
-        onClose={() => setWorksheetModalOpen(false)}
-        worksheetToEdit={worksheetToEdit}
-      />
-
-      <PrintReportModal
-        isOpen={printModalOpen}
-        onClose={() => setPrintModalOpen(false)}
-      />
-
-      <ExcelImportModal
-        isOpen={excelModalOpen}
-        onClose={() => setExcelModalOpen(false)}
-      />
-
-      <CEHMemberWorksheetModal
-        isOpen={memberWorksheetModalOpen}
-        onClose={() => setMemberWorksheetModalOpen(false)}
-        initialMemberId={selectedMemberWorksheetId}
-      />
-
+      {/* Dialog Modals — Renderizado estructural limpio y libre de condiciones Hooks */}
+      <DoctorModal isOpen={doctorModalOpen} onClose={() => setDoctorModalOpen(false)} doctorToEdit={doctorToEdit} />
+      <HospitalModal isOpen={hospitalModalOpen} onClose={() => setHospitalModalOpen(false)} hospitalToEdit={hospitalToEdit} />
+      <VisitModal isOpen={visitModalOpen} onClose={() => setVisitModalOpen(false)} visitToEdit={visitToEdit} />
+      <CaseModal isOpen={caseModalOpen} onClose={() => setCaseModalOpen(false)} caseToEdit={caseToEdit} />
+      <EmergencyWorksheetModal isOpen={worksheetModalOpen} onClose={() => setWorksheetModalOpen(false)} worksheetToEdit={worksheetToEdit} />
+      <PrintReportModal isOpen={printModalOpen} onClose={() => setPrintModalOpen(false)} />
+      <ExcelImportModal isOpen={excelModalOpen} onClose={() => setExcelModalOpen(false)} />
+      <CEHMemberWorksheetModal isOpen={memberWorksheetModalOpen} onClose={() => setMemberWorksheetModalOpen(false)} initialMemberId={selectedMemberWorksheetId} />
     </div>
   );
 }
@@ -232,11 +192,12 @@ function AppContent() {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setAuthUser(user);
       if (user) {
-        // Enlace del perfil del miembro autenticado
         const member = cehMembers.find(m => m.email?.toLowerCase() === user.email?.toLowerCase());
+        
+        // PARCHE CORREGIDO: Mapeo de variables exactas en inglés (.name y .role) para prevenir Error #310
         setCurrentUser(member ? {
-          name: member.nombre,
-          role: member.rol,
+          name: member.name || 'Miembro',
+          role: member.role || 'miembro',
           email: member.email
         } : {
           name: user.displayName || 'Usuario',
@@ -266,7 +227,6 @@ function AppContent() {
   return <MainLayout currentUser={currentUser} onLogout={logout} />;
 }
 
-// === COMPONENTE EXPORTADO COMPLETO ===
 export default function App() {
   return (
     <ErrorBoundary>
