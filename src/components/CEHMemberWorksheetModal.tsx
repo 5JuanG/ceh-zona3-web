@@ -33,8 +33,9 @@ export const CEHMemberWorksheetModal: React.FC<CEHMemberWorksheetModalProps> = (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 overflow-y-auto">
       <div className="bg-slate-900 rounded-xl max-w-3xl w-full shadow-2xl flex flex-col max-h-[90vh] border border-slate-800">
         
+        {/* Encabezado del modal con botón de descarga verde */}
         <div className="p-4 border-b border-slate-800 flex justify-between items-center bg-slate-950 rounded-t-xl">
-          <h3 className="font-bold text-slate-200">Visualización de Informe</h3>
+          <h3 className="font-bold text-slate-200">Hoja de Trabajo Individual</h3>
           <div className="flex items-center gap-2">
             <button 
               onClick={handleDescargarPDF}
@@ -42,12 +43,13 @@ export const CEHMemberWorksheetModal: React.FC<CEHMemberWorksheetModalProps> = (
             >
               Descargar PDF
             </button>
-            <button onClick={onClose} className="text-slate-400 hover:text-slate-200 px-2">
+            <button onClick={onClose} className="text-slate-400 hover:text-slate-200 px-2 text-sm">
               Cerrar
             </button>
           </div>
         </div>
 
+        {/* Documento Interno Certificado */}
         <div className="p-6 overflow-y-auto bg-slate-900 flex-1">
           <div id="hoja-trabajo-content" className="bg-white p-10 shadow-lg mx-auto max-w-[215mm] min-h-[279mm] text-slate-900 rounded-sm">
             <div className="text-center border-b-2 border-slate-900 pb-4 mb-6">
@@ -55,11 +57,16 @@ export const CEHMemberWorksheetModal: React.FC<CEHMemberWorksheetModalProps> = (
               <p className="text-sm font-semibold text-slate-600">Zona 3 — Monterrey, N.L.</p>
             </div>
             
-            <div className="space-y-4">
+            <div className="space-y-6">
               <div>
-                <h4 className="text-xs uppercase tracking-wider text-slate-400 font-bold">Asignado a:</h4>
-                <p className="text-lg font-bold text-slate-900">{memberData?.nombre || 'Nombre del Integrante'}</p>
-                <p className="text-sm text-slate-600">{memberData?.email || 'correo@ejemplo.com'}</p>
+                <h4 className="text-xs uppercase tracking-wider text-slate-400 font-bold mb-1">Integrante del Comité:</h4>
+                <p className="text-lg font-bold text-slate-900">{memberData?.nombre || 'Nombre no disponible'}</p>
+                <p className="text-sm text-slate-600">{memberData?.email || 'Correo no registrado'}</p>
+              </div>
+
+              <div className="border-t border-gray-200 pt-4">
+                <h4 className="text-xs uppercase tracking-wider text-slate-400 font-bold mb-2">Actividades / Tareas Pendientes:</h4>
+                <p className="text-sm text-gray-500 italic">Visitas programadas e informes de asistencia hospitalaria...</p>
               </div>
             </div>
           </div>
