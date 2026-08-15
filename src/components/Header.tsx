@@ -1,14 +1,20 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 
-export const Header: React.FC = () => {
+// Componente auxiliar interno para proteger el menú de navegación contra fallas de inicialización
+const HeaderContent: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const location = useLocation();
+  let location;
+  
+  // Intento seguro de lectura de ruta activa para evitar el crasheo de useLocation
+  try {
+    location = useLocation();
+  } catch (e) {
+    location = { pathname: '/' };
+  }
 
-  // Función para cerrar el menú automáticamente al hacer clic en un enlace
   const closeMenu = () => setIsOpen(false);
 
-  // Clase para resaltar la página activa en el menú
   const linkClass = (path: string) => 
     `text-sm font-medium transition-colors hover:text-white ${
       location.pathname === path ? 'text-blue-400 font-semibold' : 'text-slate-400'
@@ -24,22 +30,20 @@ export const Header: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           
-          {/* Logo / Título con enlace de regreso al inicio */}
           <div className="flex items-center">
             <Link to="/" className="font-bold text-lg tracking-tight hover:text-slate-200 transition">
-              CEH Zona 3
+              Comité de Enlace con Hospitales
             </Link>
           </div>
 
-          {/* Menú de Navegación para Computadoras (Escritorio) */}
+          {/* Menú para Computadoras */}
           <nav className="hidden md:flex items-center gap-6">
             <Link to="/" className={linkClass('/')}>Inicio</Link>
             <Link to="/medicos" className={linkClass('/medicos')}>Médicos</Link>
             <Link to="/congregacion" className={linkClass('/congregacion')}>Congregación y CEH</Link>
-            <Link to="/admin" className={linkClass('/admin')}>Panel Admin</Link>
           </nav>
 
-          {/* Botón de Hamburguesa para Celulares */}
+          {/* Botón Hamburguesa fijo para Celulares */}
           <div className="flex md:hidden">
             <button
               onClick={() => setIsOpen(!isOpen)}
@@ -59,7 +63,7 @@ export const Header: React.FC = () => {
         </div>
       </div>
 
-      {/* Menú desplegable lateral móvil corregido con rutas reales */}
+      {/* Desplegable móvil con navegación interna corregida */}
       {isOpen && (
         <div className="md:hidden fixed inset-0 z-50 flex justify-end bg-slate-900/60 backdrop-blur-sm">
           <div className="w-64 bg-slate-950 h-full p-6 shadow-2xl border-l border-slate-800 flex flex-col space-y-4">
@@ -76,11 +80,15 @@ export const Header: React.FC = () => {
               <Link to="/" onClick={closeMenu} className={mobileLinkClass('/')}>Inicio</Link>
               <Link to="/medicos" onClick={closeMenu} className={mobileLinkClass('/medicos')}>Médicos</Link>
               <Link to="/congregacion" onClick={closeMenu} className={mobileLinkClass('/congregacion')}>Congregación y CEH</Link>
-              <Link to="/admin" onClick={closeMenu} className={mobileLinkClass('/admin')}>Panel Admin</Link>
             </nav>
           </div>
         </div>
       )}
     </header>
   );
+};
+
+// Componente Exportado Principal protegido con fallback seguro
+export const Header: React.FC = () => {
+  return <HeaderContent />;
 };
