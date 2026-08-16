@@ -144,34 +144,39 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
     }
   }, [filterByMemberEmail, cehMembers]);
 
-  const drawCongregationBoundaries = (map: L.Map) => {
+    const drawCongregationBoundaries = (map: L.Map) => {
     polygonLayersRef.current.forEach(layer => layer.remove());
     polygonLayersRef.current = [];
 
+    // 1. Extraer las congregaciones asignadas al miembro de forma limpia
     let assignedCongs: string[] = [];
     if (filterByMemberEmail) {
-      const selectedMember = cehMembers.find(m => m.email?.toLowerCase() === filterByMemberEmail.toLowerCase());
+      const selectedMember = cehMembers.find(m => m.email?.toLowerCase().trim() === filterByMemberEmail.toLowerCase().trim());
       if (selectedMember && selectedMember.congregaciones) {
-        assignedCongs = selectedMember.congregaciones.map((c: any) => c.toLowerCase().trim());
+        // Guardamos quitando espacios extras para evitar errores de tipeo
+        assignedCongs = selectedMember.congregaciones.map((c: any) => c.trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase());
       }
     }
 
     const bounds = L.latLngBounds([]);
 
     Object.entries(DEFAULT_CONG_BOUNDARIES).forEach(([congName, coords]) => {
-      const isAssigned = assignedCongs.includes(congName.toLowerCase().trim());
+      // 2. Normalizar el nombre del KML base para que coincida aunque tenga acentos o mayúsculas diferentes
+      const cleanCongName = congName.trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+      const isAssigned = assignedCongs.includes(cleanCongName);
 
       let fillOpacity = 0.12;
       let strokeColor = '#3b82f6';
       let fillColor = '#60a5fa';
 
+      // 3. Aplicar coloración verde e intensa si la zona pertenece al integrante del CEH seleccionado
       if (filterByMemberEmail) {
         if (isAssigned) {
-          fillColor = '#22c55e'; // Verde brillante para el miembro seleccionado
-          strokeColor = '#15803d';
-          fillOpacity = 0.45;
+          fillColor = '#22c55e'; // Verde para su territorio asignado
+          strokeColor = '#16a34a';
+          fillOpacity = 0.55; // Subimos la opacidad para que resalte perfectamente en el PDF
         } else {
-          fillOpacity = 0.01; // Casi invisible las zonas de otros miembros
+          fillOpacity = 0.02; // Las zonas ajenas se vuelven casi invisibles para no saturar el reporte
           strokeColor = '#cbd5e1';
           fillColor = '#f1f5f9';
         }
@@ -180,7 +185,7 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
       if (coords && coords.length > 0) {
         const polygon = L.polygon(coords, {
           color: strokeColor,
-          weight: isAssigned && filterByMemberEmail ? 2.5 : 1,
+          weight: isAssigned && filterByMemberEmail ? 3 : 1, // Línea más gruesa para delimitar su zona
           fillColor: fillColor,
           fillOpacity: fillOpacity
         }).addTo(map);
@@ -188,16 +193,19 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
         polygon.bindPopup(`<b>Congregación:</b> ${congName}`);
         polygonLayersRef.current.push(polygon);
 
+        // Si es el territorio del miembro, agregar sus coordenadas al encuadre automático de la cámara
         if (filterByMemberEmail && isAssigned) {
           coords.forEach(c => bounds.extend(c));
         }
       }
     });
 
+    // 4. Enfocar automáticamente la cámara del mapa sobre su zona asignada
     if (filterByMemberEmail && bounds.isValid()) {
       map.fitBounds(bounds, { padding: [20, 20] });
     }
   };
+
 
   const drawHospitalMarkers = () => {
     if (!markersLayerRef.current) return;
