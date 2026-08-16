@@ -2,10 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
 import { InteractiveMap } from './InteractiveMap';
 
-export const CEHMemberWorksheetModal: React.FC<{ isOpen: boolean; onClose: () => void; initialMemberId: string | null }> = ({ isOpen, onClose, initialMemberId }) => {
+interface CEHMemberWorksheetModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  initialMemberId: string | null;
+}
+
+export const CEHMemberWorksheetModal: React.FC<CEHMemberWorksheetModalProps> = ({ isOpen, onClose, initialMemberId }) => {
   const { cehMembers } = useApp();
   const [selectedMemberId, setSelectedMemberId] = useState<string>('');
-  const [mapLoaded, setMapLoaded] = useState<boolean>(false);
 
   useEffect(() => {
     if (isOpen) {
@@ -17,51 +22,39 @@ export const CEHMemberWorksheetModal: React.FC<{ isOpen: boolean; onClose: () =>
     }
   }, [isOpen, initialMemberId, cehMembers]);
 
-  useEffect(() => {
-    if (isOpen) {
-      setMapLoaded(false);
-      const timer = setTimeout(() => {
-        setMapLoaded(true);
-      }, 500); // Pequeña pausa para asegurar la destrucción y reconstrucción limpia del mapa
-      return () => clearTimeout(timer);
-    } else {
-      setMapLoaded(false);
-    }
-  }, [isOpen, selectedMemberId]);
-
   if (!isOpen) return null;
 
-  const currentMemberData = cehMembers.find(m => (m.id === selectedMemberId || m.email === selectedMemberId));
+  // Buscar los datos del miembro seleccionado en el selector
+  const currentMemberData = cehMembers.find(
+    m => (m.id === selectedMemberId || m.email === selectedMemberId)
+  );
 
-  // DESCARGA POR CAPTURA DEL CONTENEDOR SEGURO CONTRA ERRORES DE LIBRERÍA
+  // Descarga síncrona instantánea libre de bucles o congelamientos
   const handleDescargarPDF = async () => {
-    try {
-      const html2pdf = (await import('html2pdf.js')).default;
-      const element = document.getElementById('hoja-trabajo-content');
-      
-      if (!element) {
-        alert('Error: No se encontró el reporte.');
-        return;
-      }
-
-      const opt = {
-        margin:       10,
-        filename:     `Hoja_Trabajo_${currentMemberData?.nombre || 'Miembro'}.pdf`,
-        image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { scale: 2, useCORS: true },
-        jsPDF:        { unit: 'mm', format: 'letter', orientation: 'portrait' }
-      };
-
-      html2pdf().set(opt).from(element).save();
-    } catch (err) {
-      alert("Falta instalar la librería del PDF en el sistema. Ejecuta 'npm install html2pdf.js' en tu terminal.");
+    const html2pdf = (await import('html2pdf.js')).default;
+    const element = document.getElementById('hoja-trabajo-content');
+    
+    if (!element) {
+      alert('Error: No se encontró el bloque del reporte.');
+      return;
     }
+
+    const opt = {
+      margin:       10,
+      filename:     `Hoja_Trabajo_${currentMemberData?.nombre || 'Miembro'}.pdf`,
+      image:        { type: 'jpeg', quality: 0.98 },
+      html2canvas:  { scale: 2, useCORS: true, logging: false },
+      jsPDF:        { unit: 'mm', format: 'letter', orientation: 'portrait' }
+    };
+
+    html2pdf().set(opt).from(element).save();
   };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 overflow-y-auto backdrop-blur-xs">
       <div className="bg-slate-900 rounded-xl max-w-4xl w-full shadow-2xl flex flex-col max-h-[92vh] border border-slate-800">
         
+        {/* Cabecera del modal */}
         <div className="p-4 border-b border-slate-800 flex flex-col sm:flex-row justify-between items-center bg-slate-950 rounded-t-xl gap-3">
           <div className="flex items-center gap-3 w-full sm:w-auto">
             <h3 className="font-bold text-slate-200 text-sm whitespace-nowrap">Reporte de:</h3>
@@ -83,7 +76,10 @@ export const CEHMemberWorksheetModal: React.FC<{ isOpen: boolean; onClose: () =>
           </div>
 
           <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
-            <button onClick={handleDescargarPDF} className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition cursor-pointer">
+            <button 
+              onClick={handleDescargarPDF} 
+              className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition cursor-pointer"
+            >
               Descargar PDF
             </button>
             <button onClick={onClose} className="text-slate-400 hover:text-slate-200 px-3 py-2 text-sm border border-slate-800 rounded-lg hover:bg-slate-900">
@@ -92,6 +88,7 @@ export const CEHMemberWorksheetModal: React.FC<{ isOpen: boolean; onClose: () =>
           </div>
         </div>
 
+        {/* Bloque Imprimible */}
         <div className="p-6 overflow-y-auto bg-slate-900 flex-1">
           <div id="hoja-trabajo-content" className="bg-white p-8 shadow-lg mx-auto max-w-[215mm] min-h-[279mm] text-slate-900 rounded-sm">
             
@@ -115,22 +112,18 @@ export const CEHMemberWorksheetModal: React.FC<{ isOpen: boolean; onClose: () =>
               </div>
             </div>
 
+            {/* Renderizado directo y estable del mapa de Leaflet */}
             <div className="mb-4">
               <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wide mb-1.5">📍 Territorio Asignado y Delimitado</h4>
               <div className="bg-slate-100 h-80 rounded-lg border border-slate-200 flex items-center justify-center overflow-hidden relative shadow-inner">
-                {mapLoaded ? (
-                  <div className="absolute inset-0 w-full h-full">
-                    <InteractiveMap 
-                      onOpenHospitalModal={() => {}} 
-                      onFilterDoctorsByHospital={() => {}} 
-                      readOnly={true}
-                      filterByMemberEmail={currentMemberData?.email}
-                      cehMembersCustom={cehMembers}
-                    />
-                  </div>
-                ) : (
-                  <p className="text-xs text-slate-400 animate-pulse font-medium">Reconstruyendo linderos geográficos del miembro...</p>
-                )}
+                <div className="absolute inset-0 w-full h-full">
+                  <InteractiveMap 
+                    onOpenHospitalModal={() => {}} 
+                    onFilterDoctorsByHospital={() => {}} 
+                    readOnly={true}
+                    filterByMemberEmail={currentMemberData?.email}
+                  />
+                </div>
               </div>
             </div>
 

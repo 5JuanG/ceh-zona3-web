@@ -9,7 +9,6 @@ interface InteractiveMapProps {
   onFilterDoctorsByHospital: (hospitalId: string) => void;
   readOnly?: boolean;
   filterByMemberEmail?: string;
-  cehMembersCustom?: any[];
 }
 
 const DEFAULT_CONG_BOUNDARIES: Record<string, [number, number][]> = CONGREGATION_BOUNDARIES;
@@ -18,25 +17,16 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
   onOpenHospitalModal,
   onFilterDoctorsByHospital,
   readOnly = false,
-  filterByMemberEmail,
-  cehMembersCustom
+  filterByMemberEmail
 }) => {
-  const { hospitals, cehMembers: globalMembers } = useApp();
-  const membersList = cehMembersCustom || globalMembers;
-
+  const { hospitals, cehMembers } = useApp();
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const polygonLayersRef = useRef<L.Polygon[]>([]);
-  const markersLayerRef = useRef<L.LayerGroup | null>(null);
 
+  // 1. Inicialización única del mapa base (Garantiza que no haya fugas de memoria)
   useEffect(() => {
-    if (!mapContainerRef.current) return;
-
-    // LIMPIEZA DE MEMORIA: Si Leaflet ya tenía un mapa en este contenedor, lo destruimos antes de crear el nuevo
-    if (mapInstanceRef.current) {
-      mapInstanceRef.current.remove();
-      mapInstanceRef.current = null;
-    }
+    if (!mapContainerRef.current || mapInstanceRef.current) return;
 
     const map = L.map(mapContainerRef.current).setView([25.2810, -100.0180], 9);
     mapInstanceRef.current = map;
@@ -45,55 +35,62 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
       attribution: '&copy; CEH Zona 3'
     }).addTo(map);
 
-    markersLayerRef.current = L.layerGroup().addTo(map);
+    // Ajuste de tamaño inicial forzado
+    setTimeout(() => map.invalidateSize(), 200);
 
-    drawCongregationBoundaries(map);
-    drawHospitalMarkers();
-
-    // Al cerrar el modal, destruir el mapa para liberar los contenedores
     return () => {
       if (mapInstanceRef.current) {
         mapInstanceRef.current.remove();
         mapInstanceRef.current = null;
       }
     };
-  }, [filterByMemberEmail, membersList]); // Se vuelve a construir de forma limpia si cambias de miembro
+  }, []);
 
-  const drawCongregationBoundaries = (map: L.Map) => {
+  // 2. Repintar exclusivamente los polígonos cuando cambia el correo del miembro (Sin bucles)
+  useEffect(() => {
+    const map = mapInstanceRef.current;
+    if (!map) return;
+
+    // Limpiar polígonos de la consulta anterior
     polygonLayersRef.current.forEach(layer => layer.remove());
     polygonLayersRef.current = [];
 
+    // Buscar las congregaciones asignadas al correo del integrante
     let assignedCongs: string[] = [];
-    if (filterByMemberEmail && membersList && membersList.length > 0) {
-      const selectedMember = membersList.find(m => m.email?.toLowerCase().trim() === filterByMemberEmail.toLowerCase().trim());
+    if (filterByMemberEmail) {
+      const selectedMember = cehMembers.find(
+        m => m.email?.toLowerCase().trim() === filterByMemberEmail.toLowerCase().trim()
+      );
       if (selectedMember && selectedMember.congregaciones) {
         assignedCongs = selectedMember.congregaciones.map((c: any) => 
-          c.toString().trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase()
+          c.toString().toLowerCase().trim()
         );
       }
     }
 
     const bounds = L.latLngBounds([]);
 
+    // Dibujar cada uno de los 147 linderos de la Zona 3
     Object.entries(DEFAULT_CONG_BOUNDARIES).forEach(([congName, coords]) => {
-      const cleanCongName = congName.trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
-      const isAssigned = assignedCongs.includes(cleanCongName);
+      // Comparación limpia por texto directo en minúsculas
+      const nameToCheck = congName.toLowerCase().trim();
+      const isAssigned = assignedCongs.includes(nameToCheck);
 
-      // Si es el mapa del reporte, dejamos invisible el resto de la zona 3 y VERDE lo asignado
       let fillOpacity = readOnly ? 0.01 : 0.12; 
-      let strokeColor = readOnly ? '#e2e8f0' : '#3b82f6'; 
-      let fillColor = readOnly ? '#f8fafc' : '#60a5fa';
+      let strokeColor = readOnly ? '#cbd5e1' : '#3b82f6'; 
+      let fillColor = readOnly ? '#f1f5f9' : '#60a5fa';
 
+      // Si es el reporte del integrante y le pertenece la zona, la pintamos de verde brillante
       if (readOnly && filterByMemberEmail && isAssigned) {
-        fillColor = '#22c55e'; // Verde brillante para el reporte
+        fillColor = '#22c55e';
         strokeColor = '#16a34a';
-        fillOpacity = 0.65; 
+        fillOpacity = 0.55; 
       }
 
       if (coords && coords.length > 0) {
         const polygon = L.polygon(coords, {
           color: strokeColor,
-          weight: isAssigned && readOnly ? 3 : 1,
+          weight: isAssigned && readOnly ? 2.5 : 1,
           fillColor: fillColor,
           fillOpacity: fillOpacity
         }).addTo(map);
@@ -106,23 +103,11 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
       }
     });
 
+    // Auto-ajustar cámara sobre los polígonos verdes del miembro seleccionado
     if (readOnly && filterByMemberEmail && bounds.isValid()) {
-      map.fitBounds(bounds, { padding: [20, 20] });
+      map.fitBounds(bounds, { padding: [15, 15] });
     }
-  };
-
-  const drawHospitalMarkers = () => {
-    if (!markersLayerRef.current || !mapInstanceRef.current) return;
-    markersLayerRef.current.clearLayers();
-
-    hospitals.forEach(hosp => {
-      if (hosp.coordenadas) {
-        // Marcador simple para evitar crasheos en modo lectura
-        const marker = L.marker([25.2810, -100.0180]).addTo(markersLayerRef.current!);
-        marker.bindPopup(`<b>${hosp.nombre}</b>`);
-      }
-    });
-  };
+  }, [filterByMemberEmail, cehMembers, readOnly]);
 
   return (
     <div className="w-full h-full flex flex-col bg-slate-900 rounded-xl overflow-hidden border border-slate-800">
@@ -134,6 +119,14 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
               <h3 className="font-bold text-slate-200">Mapa Interactivo de Trabajo</h3>
               <p className="text-xs text-slate-400">Jurisdicción Territorial Zona 3</p>
             </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <button 
+              onClick={() => onOpenHospitalModal()}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg text-xs font-medium transition"
+            >
+              Agregar Hospital
+            </button>
           </div>
         </div>
       )}
