@@ -1,112 +1,20 @@
 import React, { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
-import JSZip from 'jszip';
 import { useApp } from '../context/AppContext';
-import { Hospital, CEHMember, Congregation } from '../types';
-import { parseGoogleMapsUrl, getCityFallbackCoordinates, sanitizeHospitalCoordinates } from '../utils/googleMapsParser';
 import { CONGREGATION_BOUNDARIES } from '../data/congregationBoundaries';
-import { 
-  MapPin, Building2, Upload, Layers, ShieldCheck, Phone, UserCheck, PlusCircle, 
-  Info, CheckCircle2, RefreshCw, FileCode, Globe, Navigation, Compass, Users, 
-  Filter, Sparkles, ExternalLink, Search, Target, Eye, Trash2, Code, Clipboard, FileText
-} from 'lucide-react';
+import { Compass } from 'lucide-react';
 
 interface InteractiveMapProps {
-  onOpenHospitalModal: (hosp?: Hospital) => void;
+  onOpenHospitalModal: (hosp?: any) => void;
   onFilterDoctorsByHospital: (hospitalId: string) => void;
-}
-
-interface InteractiveMapPropsExtended extends InteractiveMapProps {
   readOnly?: boolean;
   filterByMemberEmail?: string;
   cehMembersCustom?: any[];
 }
 
-interface ZonePolygonData {
-  name: string;
-  coordinates: [number, number][];
-}
-
-const STORAGE_KEY_MAP_ZONE = 'clh_app_map_zone_3_v1';
-const STORAGE_KEY_CONG_BOUNDARIES = 'ceh_congregation_kml_boundaries_v3';
 const DEFAULT_CONG_BOUNDARIES: Record<string, [number, number][]> = CONGREGATION_BOUNDARIES;
 
-const parseRawKmlOrTextContent = (text: string) => {
-  let parsedCoordinates: [number, number][] = [];
-  let pointsExtracted: { name: string; lat: number; lng: number }[] = [];
-  let detectedName = '';
-
-  if (!text || !text.trim()) return { parsedCoordinates, pointsExtracted, detectedName };
-  const trimmed = text.trim();
-
-  if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
-    try {
-      const json = JSON.parse(trimmed);
-      if (json.polygons && Array.isArray(json.polygons)) {
-        json.polygons.forEach((poly: any) => {
-          if (poly.coordinates && Array.isArray(poly.coordinates)) {
-            poly.coordinates.forEach((c: any) => {
-              if (Array.isArray(c) && c.length >= 2) {
-                const lng = parseFloat(c[0]);
-                const lat = parseFloat(c[1]);
-                if (!isNaN(lat) && !isNaN(lng)) parsedCoordinates.push([lat, lng]);
-              }
-            });
-          }
-        });
-      }
-    } catch (e) {}
-  }
-
-  if (parsedCoordinates.length === 0) {
-    try {
-      const parser = new DOMParser();
-      const xmlDoc = parser.parseFromString(trimmed, 'text/xml');
-      const placemarks = xmlDoc.getElementsByTagName('Placemark');
-      for (let i = 0; i < placemarks.length; i++) {
-        const pm = placemarks[i];
-        const nameEl = pm.getElementsByTagName('name')[0];
-        const pmName = nameEl ? nameEl.textContent?.trim() : '';
-        const polygons = pm.getElementsByTagName('Polygon');
-        for (let p = 0; p < polygons.length; p++) {
-          if (!detectedName && pmName) detectedName = pmName;
-          const coordNodes = polygons[p].getElementsByTagName('coordinates');
-          for (let j = 0; j < coordNodes.length; j++) {
-            const raw = coordNodes[j].textContent?.trim();
-            if (raw) {
-              const tokens = raw.split(/\s+/);
-              tokens.forEach(tok => {
-                const parts = tok.split(',');
-                if (parts.length >= 2) {
-                  const n1 = parseFloat(parts[0]);
-                  const n2 = parseFloat(parts[1]);
-                  if (!isNaN(n1) && !isNaN(n2)) {
-                    if (Math.abs(n1) > Math.abs(n2)) {
-                      parsedCoordinates.push([n2, n1]);
-                    } else {
-                      parsedCoordinates.push([n1, n2]);
-                    }
-                  }
-                }
-              });
-            }
-          }
-        }
-      }
-    } catch (e) {}
-  }
-  return { parsedCoordinates, pointsExtracted, detectedName };
-};
-
-const CITY_COORDINATES: Record<string, { lat: number; lng: number }> = {
-  'Guadalupe': { lat: 25.6780, lng: -100.2570 },
-  'Juárez': { lat: 25.6470, lng: -100.0960 },
-  'Cadereyta Jiménez': { lat: 25.5880, lng: -99.9920 },
-  'Allende': { lat: 25.2810, lng: -100.0180 },
-  'Montemorelos': { lat: 25.1880, lng: -99.8270 },
-  'Linares': { lat: 24.8620, lng: -99.5670 }
-};
-export const InteractiveMap: React.FC<InteractiveMapPropsExtended> = ({
+export const InteractiveMap: React.FC<InteractiveMapProps> = ({
   onOpenHospitalModal,
   onFilterDoctorsByHospital,
   readOnly = false,
@@ -121,13 +29,16 @@ export const InteractiveMap: React.FC<InteractiveMapPropsExtended> = ({
   const polygonLayersRef = useRef<L.Polygon[]>([]);
   const markersLayerRef = useRef<L.LayerGroup | null>(null);
 
-  const [mapCenter] = useState<[number, number]>([25.2810, -100.0180]);
-  const [zoomLevel] = useState<number>(9);
-
   useEffect(() => {
     if (!mapContainerRef.current) return;
 
-    const map = L.map(mapContainerRef.current).setView(mapCenter, zoomLevel);
+    // LIMPIEZA DE MEMORIA: Si Leaflet ya tenía un mapa en este contenedor, lo destruimos antes de crear el nuevo
+    if (mapInstanceRef.current) {
+      mapInstanceRef.current.remove();
+      mapInstanceRef.current = null;
+    }
+
+    const map = L.map(mapContainerRef.current).setView([25.2810, -100.0180], 9);
     mapInstanceRef.current = map;
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -139,17 +50,14 @@ export const InteractiveMap: React.FC<InteractiveMapPropsExtended> = ({
     drawCongregationBoundaries(map);
     drawHospitalMarkers();
 
+    // Al cerrar el modal, destruir el mapa para liberar los contenedores
     return () => {
-      map.remove();
-      mapInstanceRef.current = null;
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.remove();
+        mapInstanceRef.current = null;
+      }
     };
-  }, []);
-
-  useEffect(() => {
-    if (mapInstanceRef.current) {
-      drawCongregationBoundaries(mapInstanceRef.current);
-    }
-  }, [filterByMemberEmail, membersList]);
+  }, [filterByMemberEmail, membersList]); // Se vuelve a construir de forma limpia si cambias de miembro
 
   const drawCongregationBoundaries = (map: L.Map) => {
     polygonLayersRef.current.forEach(layer => layer.remove());
@@ -171,18 +79,15 @@ export const InteractiveMap: React.FC<InteractiveMapPropsExtended> = ({
       const cleanCongName = congName.trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
       const isAssigned = assignedCongs.includes(cleanCongName);
 
-      let fillOpacity = 0.01; 
-      let strokeColor = '#cbd5e1'; 
-      let fillColor = '#f1f5f9';
+      // Si es el mapa del reporte, dejamos invisible el resto de la zona 3 y VERDE lo asignado
+      let fillOpacity = readOnly ? 0.01 : 0.12; 
+      let strokeColor = readOnly ? '#e2e8f0' : '#3b82f6'; 
+      let fillColor = readOnly ? '#f8fafc' : '#60a5fa';
 
-      if (!readOnly) {
-        fillOpacity = 0.12;
-        strokeColor = '#3b82f6';
-        fillColor = '#60a5fa';
-      } else if (filterByMemberEmail && isAssigned) {
-        fillColor = '#22c55e'; // Verde sólido para el reporte del miembro
+      if (readOnly && filterByMemberEmail && isAssigned) {
+        fillColor = '#22c55e'; // Verde brillante para el reporte
         strokeColor = '#16a34a';
-        fillOpacity = 0.6; 
+        fillOpacity = 0.65; 
       }
 
       if (coords && coords.length > 0) {
@@ -193,7 +98,6 @@ export const InteractiveMap: React.FC<InteractiveMapPropsExtended> = ({
           fillOpacity: fillOpacity
         }).addTo(map);
 
-        polygon.bindPopup(`<b>Congregación:</b> ${congName}`);
         polygonLayersRef.current.push(polygon);
 
         if (readOnly && isAssigned) {
@@ -208,14 +112,14 @@ export const InteractiveMap: React.FC<InteractiveMapPropsExtended> = ({
   };
 
   const drawHospitalMarkers = () => {
-    if (!markersLayerRef.current) return;
+    if (!markersLayerRef.current || !mapInstanceRef.current) return;
     markersLayerRef.current.clearLayers();
 
     hospitals.forEach(hosp => {
-      const coords = sanitizeHospitalCoordinates(hosp.coordenadas);
-      if (coords) {
-        const marker = L.marker([coords.lat, coords.lng]).addTo(markersLayerRef.current!);
-        marker.bindPopup(`<div style="font-family: sans-serif; font-size: 13px;"><b>${hosp.nombre}</b></div>`);
+      if (hosp.coordenadas) {
+        // Marcador simple para evitar crasheos en modo lectura
+        const marker = L.marker([25.2810, -100.0180]).addTo(markersLayerRef.current!);
+        marker.bindPopup(`<b>${hosp.nombre}</b>`);
       }
     });
   };
@@ -230,14 +134,6 @@ export const InteractiveMap: React.FC<InteractiveMapPropsExtended> = ({
               <h3 className="font-bold text-slate-200">Mapa Interactivo de Trabajo</h3>
               <p className="text-xs text-slate-400">Jurisdicción Territorial Zona 3</p>
             </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <button 
-              onClick={() => onOpenHospitalModal()}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg text-xs font-medium transition"
-            >
-              Agregar Hospital
-            </button>
           </div>
         </div>
       )}
