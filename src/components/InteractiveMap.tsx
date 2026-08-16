@@ -66,7 +66,7 @@ const parseRawKmlOrTextContent = (text: string) => {
       for (let i = 0; i < placemarks.length; i++) {
         const pm = placemarks[i];
         const nameEl = pm.getElementsByTagName('name')[0];
-        const pmName = nameEl?.textContent?.trim() || '';
+        const pmName = nameEl ? nameEl.textContent?.trim() : '';
         const polygons = pm.getElementsByTagName('Polygon');
         for (let p = 0; p < polygons.length; p++) {
           if (!detectedName && pmName) detectedName = pmName;
@@ -180,7 +180,7 @@ export const InteractiveMap: React.FC<InteractiveMapPropsExtended> = ({
         strokeColor = '#3b82f6';
         fillColor = '#60a5fa';
       } else if (filterByMemberEmail && isAssigned) {
-        fillColor = '#22c55e'; // Verde para su territorio asignado
+        fillColor = '#22c55e'; // Verde sólido para el reporte del miembro
         strokeColor = '#16a34a';
         fillOpacity = 0.6; 
       }
