@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
 import { InteractiveMap } from './InteractiveMap';
+import { CONGREGATION_BOUNDARIES } from '../data/congregationBoundaries'; // <-- Forzamos la lectura estática de los linderos
+import html2pdf from 'html2pdf.js'; // <-- Importación directa y segura de la librería de PDFs
 
 interface CEHMemberWorksheetModalProps {
   isOpen: boolean;
@@ -23,12 +25,14 @@ export const CEHMemberWorksheetModal: React.FC<CEHMemberWorksheetModalProps> = (
     }
   }, [isOpen, initialMemberId, cehMembers]);
 
+  // Retraso controlado óptimo para forzar que el modal esté 100% estirado antes de pintar el mapa
   useEffect(() => {
     if (isOpen) {
       const timer = setTimeout(() => {
         setMapLoaded(true);
+        // Comando nativo para forzar a Leaflet a recalcular tamaños
         window.dispatchEvent(new Event('resize'));
-      }, 600);
+      }, 800);
       return () => clearTimeout(timer);
     } else {
       setMapLoaded(false);
@@ -37,16 +41,17 @@ export const CEHMemberWorksheetModal: React.FC<CEHMemberWorksheetModalProps> = (
 
   if (!isOpen) return null;
 
+  // Buscar los datos completos del miembro activo
   const currentMemberData = cehMembers.find(
     m => (m.id === selectedMemberId || m.email === selectedMemberId)
   );
 
-  const handleDescargarPDF = async () => {
-    const html2pdf = (await import('html2pdf.js')).default;
+  // Función de descarga directa corregida
+  const handleDescargarPDF = () => {
     const element = document.getElementById('hoja-trabajo-content');
     
     if (!element) {
-      alert('Error: No se encontró el contenido del reporte.');
+      alert('Error: No se encontró el contenedor de la hoja de trabajo.');
       return;
     }
 
@@ -54,10 +59,11 @@ export const CEHMemberWorksheetModal: React.FC<CEHMemberWorksheetModalProps> = (
       margin:       10,
       filename:     `Hoja_Trabajo_${currentMemberData?.nombre || 'Miembro'}.pdf`,
       image:        { type: 'jpeg', quality: 0.98 },
-      html2canvas:  { scale: 2, useCORS: true },
+      html2canvas:  { scale: 2, useCORS: true, logging: false },
       jsPDF:        { unit: 'mm', format: 'letter', orientation: 'portrait' }
     };
 
+    // Ejecución directa de la librería importada
     html2pdf().set(opt).from(element).save();
   };
 
@@ -90,7 +96,7 @@ export const CEHMemberWorksheetModal: React.FC<CEHMemberWorksheetModalProps> = (
           <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
             <button 
               onClick={handleDescargarPDF}
-              className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition cursor-pointer"
+              className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition cursor-pointer shadow-lg"
             >
               Descargar PDF
             </button>
@@ -128,26 +134,26 @@ export const CEHMemberWorksheetModal: React.FC<CEHMemberWorksheetModalProps> = (
               </div>
             </div>
 
-            {/* Espacio del Mapa Filtrado por Miembro */}
+            {/* Espacio del Mapa Filtrado con Datos Forzados */}
             <div className="mb-4">
               <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wide mb-1.5 flex items-center gap-1">
                 📍 Territorio Asignado y Delimitado
               </h4>
               <div className="bg-slate-100 h-80 rounded-lg border border-slate-200 flex items-center justify-center overflow-hidden relative shadow-inner">
-                {mapLoaded ? (
+                {mapLoaded && CONGREGATION_BOUNDARIES ? (
                   <div className="absolute inset-0 w-full h-full modal-map-clean-view">
                     <InteractiveMap 
                       onOpenHospitalModal={() => {}} 
                       onFilterDoctorsByHospital={() => {}} 
                       readOnly={true}
                       filterByMemberEmail={currentMemberData?.email}
-                      cehMembersCustom={cehMembers} // <-- Pasamos los miembros actualizados al mapa
+                      cehMembersCustom={cehMembers}
                     />
                   </div>
                 ) : (
                   <div className="flex flex-col items-center gap-2">
                     <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-slate-600"></div>
-                    <p className="text-xs text-slate-400 font-medium">Renderizando mapa del territorio...</p>
+                    <p className="text-xs text-slate-400 font-medium">Sincronizando coordenadas territoriales...</p>
                   </div>
                 )}
               </div>
