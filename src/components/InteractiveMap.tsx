@@ -14,8 +14,12 @@ import {
 interface InteractiveMapProps {
   onOpenHospitalModal: (hosp?: Hospital) => void;
   onFilterDoctorsByHospital: (hospitalId: string) => void;
-  readOnly?: boolean;          // <-- Propiedad para ocultar botones en el PDF
-  filterByMemberEmail?: string; // <-- Propiedad para colorear el territorio del miembro
+}
+
+interface InteractiveMapPropsExtended extends InteractiveMapProps {
+  readOnly?: boolean;
+  filterByMemberEmail?: string;
+  cehMembersCustom?: any[];
 }
 
 interface ZonePolygonData {
@@ -102,19 +106,22 @@ const CITY_COORDINATES: Record<string, { lat: number; lng: number }> = {
   'Montemorelos': { lat: 25.1880, lng: -99.8270 },
   'Linares': { lat: 24.8620, lng: -99.5670 }
 };
-export const InteractiveMap: React.FC<InteractiveMapProps> = ({
+export const InteractiveMap: React.FC<InteractiveMapPropsExtended> = ({
   onOpenHospitalModal,
   onFilterDoctorsByHospital,
   readOnly = false,
-  filterByMemberEmail
+  filterByMemberEmail,
+  cehMembersCustom
 }) => {
-  const { hospitals, cehMembers } = useApp();
+  const { hospitals, cehMembers: globalMembers } = useApp();
+  const membersList = cehMembersCustom || globalMembers;
+
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const polygonLayersRef = useRef<L.Polygon[]>([]);
   const markersLayerRef = useRef<L.LayerGroup | null>(null);
 
-  const [mapCenter] = useState<[number, number]>([25.2810, -100.0180]); // Allende/Montemorelos
+  const [mapCenter] = useState<[number, number]>([25.2810, -100.0180]);
   const [zoomLevel] = useState<number>(9);
 
   useEffect(() => {
@@ -142,50 +149,46 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
     if (mapInstanceRef.current) {
       drawCongregationBoundaries(mapInstanceRef.current);
     }
-  }, [filterByMemberEmail, cehMembers]);
+  }, [filterByMemberEmail, membersList]);
 
-    const drawCongregationBoundaries = (map: L.Map) => {
+  const drawCongregationBoundaries = (map: L.Map) => {
     polygonLayersRef.current.forEach(layer => layer.remove());
     polygonLayersRef.current = [];
 
-    // 1. Extraer las congregaciones asignadas al miembro de forma limpia
     let assignedCongs: string[] = [];
-    if (filterByMemberEmail) {
-      const selectedMember = cehMembers.find(m => m.email?.toLowerCase().trim() === filterByMemberEmail.toLowerCase().trim());
+    if (filterByMemberEmail && membersList && membersList.length > 0) {
+      const selectedMember = membersList.find(m => m.email?.toLowerCase().trim() === filterByMemberEmail.toLowerCase().trim());
       if (selectedMember && selectedMember.congregaciones) {
-        // Guardamos quitando espacios extras para evitar errores de tipeo
-        assignedCongs = selectedMember.congregaciones.map((c: any) => c.trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase());
+        assignedCongs = selectedMember.congregaciones.map((c: any) => 
+          c.toString().trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase()
+        );
       }
     }
 
     const bounds = L.latLngBounds([]);
 
     Object.entries(DEFAULT_CONG_BOUNDARIES).forEach(([congName, coords]) => {
-      // 2. Normalizar el nombre del KML base para que coincida aunque tenga acentos o mayúsculas diferentes
       const cleanCongName = congName.trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
       const isAssigned = assignedCongs.includes(cleanCongName);
 
-      let fillOpacity = 0.12;
-      let strokeColor = '#3b82f6';
-      let fillColor = '#60a5fa';
+      let fillOpacity = 0.01; 
+      let strokeColor = '#cbd5e1'; 
+      let fillColor = '#f1f5f9';
 
-      // 3. Aplicar coloración verde e intensa si la zona pertenece al integrante del CEH seleccionado
-      if (filterByMemberEmail) {
-        if (isAssigned) {
-          fillColor = '#22c55e'; // Verde para su territorio asignado
-          strokeColor = '#16a34a';
-          fillOpacity = 0.55; // Subimos la opacidad para que resalte perfectamente en el PDF
-        } else {
-          fillOpacity = 0.02; // Las zonas ajenas se vuelven casi invisibles para no saturar el reporte
-          strokeColor = '#cbd5e1';
-          fillColor = '#f1f5f9';
-        }
+      if (!readOnly) {
+        fillOpacity = 0.12;
+        strokeColor = '#3b82f6';
+        fillColor = '#60a5fa';
+      } else if (filterByMemberEmail && isAssigned) {
+        fillColor = '#22c55e'; // Verde para su territorio asignado
+        strokeColor = '#16a34a';
+        fillOpacity = 0.6; 
       }
 
       if (coords && coords.length > 0) {
         const polygon = L.polygon(coords, {
           color: strokeColor,
-          weight: isAssigned && filterByMemberEmail ? 3 : 1, // Línea más gruesa para delimitar su zona
+          weight: isAssigned && readOnly ? 3 : 1,
           fillColor: fillColor,
           fillOpacity: fillOpacity
         }).addTo(map);
@@ -193,19 +196,16 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
         polygon.bindPopup(`<b>Congregación:</b> ${congName}`);
         polygonLayersRef.current.push(polygon);
 
-        // Si es el territorio del miembro, agregar sus coordenadas al encuadre automático de la cámara
-        if (filterByMemberEmail && isAssigned) {
+        if (readOnly && isAssigned) {
           coords.forEach(c => bounds.extend(c));
         }
       }
     });
 
-    // 4. Enfocar automáticamente la cámara del mapa sobre su zona asignada
-    if (filterByMemberEmail && bounds.isValid()) {
+    if (readOnly && filterByMemberEmail && bounds.isValid()) {
       map.fitBounds(bounds, { padding: [20, 20] });
     }
   };
-
 
   const drawHospitalMarkers = () => {
     if (!markersLayerRef.current) return;
@@ -215,14 +215,7 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
       const coords = sanitizeHospitalCoordinates(hosp.coordenadas);
       if (coords) {
         const marker = L.marker([coords.lat, coords.lng]).addTo(markersLayerRef.current!);
-        marker.bindPopup(`
-          <div style="font-family: sans-serif; font-size: 13px;">
-            <b>${hosp.nombre}</b><br/>
-            <button style="margin-top:5px; background:#2563eb; color:white; border:none; padding:4px 8px; border-radius:4px; cursor:pointer;" onclick="window.location.hash='#/doctors';">
-              Ver Médicos
-            </button>
-          </div>
-        `);
+        marker.bindPopup(`<div style="font-family: sans-serif; font-size: 13px;"><b>${hosp.nombre}</b></div>`);
       }
     });
   };

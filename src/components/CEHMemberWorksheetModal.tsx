@@ -28,7 +28,7 @@ export const CEHMemberWorksheetModal: React.FC<CEHMemberWorksheetModalProps> = (
       const timer = setTimeout(() => {
         setMapLoaded(true);
         window.dispatchEvent(new Event('resize'));
-      }, 600); // Tiempo óptimo para asegurar que Leaflet tome las dimensiones correctas dentro de la tarjeta
+      }, 600);
       return () => clearTimeout(timer);
     } else {
       setMapLoaded(false);
@@ -37,7 +37,6 @@ export const CEHMemberWorksheetModal: React.FC<CEHMemberWorksheetModalProps> = (
 
   if (!isOpen) return null;
 
-  // Encontrar el miembro seleccionado actualmente
   const currentMemberData = cehMembers.find(
     m => (m.id === selectedMemberId || m.email === selectedMemberId)
   );
@@ -137,16 +136,12 @@ export const CEHMemberWorksheetModal: React.FC<CEHMemberWorksheetModalProps> = (
               <div className="bg-slate-100 h-80 rounded-lg border border-slate-200 flex items-center justify-center overflow-hidden relative shadow-inner">
                 {mapLoaded ? (
                   <div className="absolute inset-0 w-full h-full modal-map-clean-view">
-                    {/* 
-                      Enviamos propiedades de control: 
-                      1. readOnly evita que aparezcan botones de carga o edición.
-                      2. filterByMemberEmail obliga al mapa a pintar solo los linderos de este miembro.
-                    */}
                     <InteractiveMap 
                       onOpenHospitalModal={() => {}} 
                       onFilterDoctorsByHospital={() => {}} 
                       readOnly={true}
                       filterByMemberEmail={currentMemberData?.email}
+                      cehMembersCustom={cehMembers} // <-- Pasamos los miembros actualizados al mapa
                     />
                   </div>
                 ) : (
