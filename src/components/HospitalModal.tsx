@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { InteractiveMap } from './InteractiveMap';
 
 interface HospitalModalProps {
@@ -8,14 +8,29 @@ interface HospitalModalProps {
 }
 
 export const HospitalModal: React.FC<HospitalModalProps> = ({ isOpen, onClose, hospitalToEdit }) => {
+  const [cargarMapa, setCargarMapa] = useState(false);
+
+  // Esperar a que la animación de apertura del modal de Tailwind termine 
+  // antes de montar las capas pesadas de Leaflet en el navegador
+  useEffect(() => {
+    if (isOpen) {
+      const timer = setTimeout(() => {
+        setCargarMapa(true);
+      }, 400); 
+      return () => clearTimeout(timer);
+    } else {
+      setCargarMapa(false);
+    }
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 overflow-y-auto backdrop-blur-xs">
-      <div className="bg-white rounded-xl max-w-4xl w-full shadow-2xl flex flex-col max-h-[92vh] border border-gray-200 animate-in fade-in zoom-in-95 duration-200">
+      <div className="bg-white rounded-xl max-w-4xl w-full shadow-2xl border border-gray-200 flex flex-col max-h-[92vh] animate-in fade-in zoom-in-95 duration-200">
         
         {/* Cabecera del Formulario */}
-        <div className="p-4 border-b border-gray-200 flex justify-between items-center bg-slate-900 text-white rounded-t-xl">
+        <div className="p-4 border-b border-gray-200 flex justify-between items-center bg-slate-900 text-white rounded-t-xl shrink-0">
           <h3 className="font-bold text-sm sm:text-base flex items-center gap-2">
             🏥 {hospitalToEdit ? 'Editar Hospital de la Zona' : 'Registrar Nuevo Hospital de la Zona'}
           </h3>
@@ -24,21 +39,28 @@ export const HospitalModal: React.FC<HospitalModalProps> = ({ isOpen, onClose, h
           </button>
         </div>
 
-        {/* Cuerpo del Formulario con Distribución de Altura Controlada */}
-        <div className="p-5 overflow-y-auto flex-1 space-y-4 bg-slate-50 max-h-[calc(92vh-130px)]">
+        {/* Cuerpo del Formulario con Desplazamiento Controlado */}
+        <div className="p-5 overflow-y-auto flex-1 space-y-4 bg-slate-50">
           
           {/* SECCIÓN DEL MAPA RESPONSIVO FIJADO */}
           <div className="w-full rounded-xl overflow-hidden border border-gray-200 bg-white p-2 shadow-sm">
             <p className="text-xs text-gray-500 font-medium mb-1.5 flex items-center gap-1">
               📍 Ubica el centro de salud en el mapa interactivo de control:
             </p>
-            {/* Forzamos una altura de 280px para que el mapa quepa holgadamente dentro de la caja */}
-            <div className="w-full rounded-lg overflow-hidden h-70 relative">
-              <InteractiveMap 
-                onOpenHospitalModal={() => {}} 
-                onFilterDoctorsByHospital={() => {}} 
-                readOnly={true} 
-              />
+            
+            {/* Contenedor encapsulado con altura absoluta de 280px para evitar desbordamientos */}
+            <div className="w-full rounded-lg overflow-hidden bg-slate-100 relative" style={{ height: '280px' }}>
+              {cargarMapa ? (
+                <InteractiveMap 
+                  onOpenHospitalModal={() => {}} 
+                  onFilterDoctorsByHospital={() => {}} 
+                  readOnly={true} 
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-xs text-slate-400 italic">
+                  Inicializando visor geográfico...
+                </div>
+              )}
             </div>
           </div>
 
@@ -72,11 +94,11 @@ export const HospitalModal: React.FC<HospitalModalProps> = ({ isOpen, onClose, h
         </div>
 
         {/* Barra de Acciones Inferior Fija */}
-        <div className="p-3 border-t border-gray-200 flex justify-end gap-2 bg-gray-50 rounded-b-xl">
+        <div className="p-3 border-t border-gray-200 flex justify-end gap-2 bg-gray-50 rounded-b-xl shrink-0">
           <button onClick={onClose} className="px-4 py-1.5 text-xs bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 transition cursor-pointer">
             Cancelar
           </button>
-          <button type="submit" className="px-4 py-1.5 text-xs bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium shadow-md cursor-pointer">
+          <button type="button" onClick={(e) => e.preventDefault()} className="px-4 py-1.5 text-xs bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium shadow-md cursor-pointer">
             {hospitalToEdit ? 'Guardar Cambios' : 'Registrar Hospital'}
           </button>
         </div>

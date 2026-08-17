@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { InteractiveMap } from './InteractiveMap';
+import { Users, X } from 'lucide-react';
 
 interface CEHMemberWorksheetModalProps {
   isOpen: boolean;
@@ -9,141 +10,171 @@ interface CEHMemberWorksheetModalProps {
 }
 
 export const CEHMemberWorksheetModal: React.FC<CEHMemberWorksheetModalProps> = ({ isOpen, onClose, initialMemberId }) => {
-  const { cehMembers } = useApp();
-  const [selectedMemberId, setSelectedMemberId] = useState<string>('');
+  const { doctors, hospitals, cehMembers } = useApp();
+  const [selectedMemberId, setSelectedMemberId] = useState<string | null>(initialMemberId);
 
   useEffect(() => {
     if (isOpen) {
-      if (initialMemberId) {
-        setSelectedMemberId(initialMemberId);
-      } else if (cehMembers && cehMembers.length > 0) {
-        setSelectedMemberId(cehMembers[0].id || cehMembers[0].email || '');
-      }
+      setSelectedMemberId(initialMemberId);
     }
-  }, [isOpen, initialMemberId, cehMembers]);
+  }, [initialMemberId, isOpen]);
 
   if (!isOpen) return null;
 
-  // Buscar los datos del miembro seleccionado en el selector
-  const currentMemberData = cehMembers.find(
-    m => (m.id === selectedMemberId || m.email === selectedMemberId)
-  );
+  const miembroActivo = cehMembers ? cehMembers.find(m => m.id === selectedMemberId) : null;
+  const zonaAsignadaRaw = miembroActivo?.zone || miembroActivo?.zona || "Zona 3";
+  const zonaAsignadaClean = zonaAsignadaRaw.toLowerCase().replace(/\s+/g, '');
+  const correoMiembro = miembroActivo?.email || "";
+  const colorMiembro = miembroActivo?.color || "#22c55e"; 
+  const listaCongregaciones = miembroActivo?.congregations || miembroActivo?.congregaciones || [];
 
-  // Descarga síncrona instantánea libre de bucles o congelamientos
+  const hospitalesClinicas = hospitals ? hospitals.filter(h => 
+    (h.zone || '').toLowerCase().replace(/\s+/g, '') === zonaAsignadaClean
+  ) : [];
+  
+  const medicosEntrevistados = doctors ? doctors.filter(d => 
+    (d.zone || '').toLowerCase().replace(/\s+/g, '') === zonaAsignadaClean && 
+    (d.type === 'prospecto' || d.notes?.toLowerCase().includes('entrevista'))
+  ) : [];
+
+  const proveedoresSalud = hospitals ? hospitals.filter(h => 
+    (h.zone || '').toLowerCase().replace(/\s+/g, '') === zonaAsignadaClean && 
+    (h.name?.toLowerCase().includes('proveedor') || h.notes?.toLowerCase().includes('proveedor'))
+  ) : [];
+
+  const personalAdministrativo = cehMembers ? cehMembers.filter(m => 
+    (m.zone || m.zona || '').toLowerCase().replace(/\s+/g, '') === zonaAsignadaClean && 
+    (m.role?.toLowerCase().includes('admin') || m.role?.toLowerCase().includes('secretario'))
+  ) : [];
+
   const handleDescargarPDF = async () => {
     const html2pdf = (await import('html2pdf.js')).default;
     const element = document.getElementById('hoja-trabajo-content');
-    
-    if (!element) {
-      alert('Error: No se encontró el bloque del reporte.');
-      return;
-    }
+    if (!element) return alert('Error: No se encontró el contenedor de la hoja de trabajo.');
 
     const opt = {
-      margin:       10,
-      filename:     `Hoja_Trabajo_${currentMemberData?.nombre || 'Miembro'}.pdf`,
-      image:        { type: 'jpeg', quality: 0.98 },
-      html2canvas:  { scale: 2, useCORS: true, logging: false },
-      jsPDF:        { unit: 'mm', format: 'letter', orientation: 'portrait' }
+      margin: 8,
+      filename: `Hoja_Trabajo_${zonaAsignadaRaw.replace(/\s+/g, '_')}_${miembroActivo?.name?.replace(/\s+/g, '_') || 'Miembro'}.pdf`,
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true, logging: false, allowTaint: true },
+      jsPDF: { unit: 'mm', format: 'letter', orientation: 'portrait' }
     };
-
     html2pdf().set(opt).from(element).save();
   };
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 overflow-y-auto backdrop-blur-xs">
-      <div className="bg-slate-900 rounded-xl max-w-4xl w-full shadow-2xl flex flex-col max-h-[92vh] border border-slate-800">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 overflow-y-auto">
+      <div className="bg-slate-900 rounded-xl max-w-4xl w-full shadow-2xl flex flex-col h-[94vh] border border-slate-800">
         
-        {/* Cabecera del modal */}
-        <div className="p-4 border-b border-slate-800 flex flex-col sm:flex-row justify-between items-center bg-slate-950 rounded-t-xl gap-3">
-          <div className="flex items-center gap-3 w-full sm:w-auto">
-            <h3 className="font-bold text-slate-200 text-sm whitespace-nowrap">Reporte de:</h3>
-            <select
-              value={selectedMemberId}
-              onChange={(e) => setSelectedMemberId(e.target.value)}
-              className="bg-slate-800 text-slate-100 text-sm font-medium rounded-lg block w-full sm:w-64 p-2 border border-slate-700"
+        <div className="p-4 border-b border-slate-800 flex justify-between items-center bg-slate-950 rounded-t-xl shrink-0">
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-medium text-slate-300">Reporte de:</span>
+            <select 
+              value={selectedMemberId || ''} 
+              onChange={(e) => setSelectedMemberId(e.target.value || null)}
+              className="bg-slate-800 border border-slate-700 text-slate-200 text-xs rounded-lg px-2.5 py-1 outline-none font-semibold focus:ring-1 focus:ring-sky-500"
             >
-              {cehMembers && cehMembers.length > 0 ? (
-                cehMembers.map((member, idx) => (
-                  <option key={idx} value={member.id || member.email}>
-                    {member.nombre || member.name || member.email}
-                  </option>
-                ))
-              ) : (
-                <option value="">No hay miembros registrados</option>
-              )}
+              <option value="">-- Seleccionar Integrante --</option>
+              {cehMembers && cehMembers.map(m => (
+                <option key={m.id} value={m.id}>{m.name || m.nombre}</option>
+              ))}
             </select>
           </div>
-
-          <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
-            <button 
-              onClick={handleDescargarPDF} 
-              className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition cursor-pointer"
-            >
-              Descargar PDF
-            </button>
-            <button onClick={onClose} className="text-slate-400 hover:text-slate-200 px-3 py-2 text-sm border border-slate-800 rounded-lg hover:bg-slate-900">
-              Cerrar
-            </button>
+          <div className="flex items-center gap-3">
+            <button onClick={handleDescargarPDF} className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-xs font-bold shadow-md transition-all">Descargar PDF</button>
+            <button onClick={onClose} className="text-slate-400 hover:text-white px-2 text-xs font-medium border border-slate-700 rounded-lg py-1.5 bg-slate-800 cursor-pointer">Cerrar</button>
           </div>
         </div>
 
-        {/* Bloque Imprimible */}
-        <div className="p-6 overflow-y-auto bg-slate-900 flex-1">
-          <div id="hoja-trabajo-content" className="bg-white p-8 shadow-lg mx-auto max-w-[215mm] min-h-[279mm] text-slate-900 rounded-sm">
-            
-            <div className="text-center border-b-2 border-slate-900 pb-3 mb-4">
-              <h2 className="text-xl font-bold uppercase tracking-wider text-slate-900">Comité de Enlace con Hospitales</h2>
-              <p className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Reporte Interno de Operación y Control Territorial</p>
+        <div className="p-4 overflow-y-auto bg-slate-950 flex-1 flex justify-center">
+          <div 
+            id="hoja-trabajo-content" 
+            className="bg-white p-8 shadow-2xl w-full max-w-[215mm] text-slate-900 rounded-sm font-sans flex flex-col space-y-4"
+            style={{ minHeight: '279mm' }}
+          >
+            <div className="text-center border-b-2 border-slate-900 pb-2">
+              <h2 className="text-base font-black uppercase tracking-wider text-slate-900">Comité de Enlace con Hospitales</h2>
+              <p className="text-xs font-bold text-slate-500 tracking-tight">Reporte Interno de Operación y Control Territorial</p>
             </div>
-            
-            <div className="flex justify-between items-start bg-slate-50 p-3 rounded border border-slate-200 mb-4 text-xs">
+
+            <div className="grid grid-cols-2 gap-4 bg-slate-50 p-2.5 rounded-lg border border-slate-200 text-xs">
               <div>
-                <h4 className="uppercase tracking-wider text-slate-400 font-bold mb-0.5">Integrante Responsable</h4>
-                <p className="text-sm font-bold text-slate-900 flex items-center gap-1.5">
-                  <span className="h-2.5 w-2.5 bg-blue-600 rounded-full inline-block"></span>
-                  {currentMemberData?.nombre || currentMemberData?.name}
-                </p>
-                <p className="text-slate-500 mt-0.5">{currentMemberData?.email || ''}</p>
+                <span className="block text-[9px] uppercase font-bold text-slate-400">Integrante Responsable</span>
+                <span className="font-bold text-slate-800 text-xs flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full inline-block shadow-sm" style={{ backgroundColor: colorMiembro }} />
+                  {miembroActivo?.name || miembroActivo?.nombre || 'Selecciona un miembro del CEH arriba'}
+                </span>
               </div>
               <div className="text-right">
-                <h4 className="uppercase tracking-wider text-slate-400 font-bold mb-0.5">Territorio Jurisdicción</h4>
-                <span className="bg-slate-900 text-white font-black px-2 py-0.5 rounded text-xs inline-block">ZONA 3</span>
+                <span className="block text-[9px] uppercase font-bold text-slate-400">Territorio Jurisdicción</span>
+                <span className="inline-block bg-slate-900 text-white font-extrabold px-2 py-0.5 rounded text-[11px] uppercase tracking-wider">{zonaAsignadaRaw}</span>
               </div>
             </div>
 
-            {/* Renderizado directo y estable del mapa de Leaflet */}
-            <div className="mb-4">
-              <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wide mb-1.5">📍 Territorio Asignado y Delimitado</h4>
-              <div className="bg-slate-100 h-80 rounded-lg border border-slate-200 flex items-center justify-center overflow-hidden relative shadow-inner">
-                <div className="absolute inset-0 w-full h-full">
-                  <InteractiveMap 
-                    onOpenHospitalModal={() => {}} 
-                    onFilterDoctorsByHospital={() => {}} 
-                    readOnly={true}
-                    filterByMemberEmail={currentMemberData?.email}
-                  />
+            <div className="space-y-1">
+              <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wide">📍 Territorio Delimitado por Congregaciones</h4>
+              <div className="w-full rounded-xl border border-gray-200 bg-white p-1 overflow-hidden isolate relative" style={{ height: '240px' }}>
+                {correoMiembro ? (
+                  <div className="w-full h-full absolute inset-0 overflow-hidden">
+                    <InteractiveMap 
+                      onOpenHospitalModal={() => {}} 
+                      onFilterDoctorsByHospital={() => {}} 
+                      readOnly={true}
+                      filterByMemberEmail={correoMiembro}
+                    />
+                  </div>
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-xs text-slate-400 italic bg-slate-50">
+                    Selecciona un miembro arriba para proyectar su mapa de linderos.
+                  </div>
+                )}
+              </div>
+              {listaCongregaciones.length > 0 && (
+                <div className="text-[10px] text-slate-500 font-medium leading-tight max-h-12 overflow-y-auto">
+                  <strong>Congregaciones Asignadas ({listaCongregaciones.length}):</strong> {listaCongregaciones.join(', ')}
                 </div>
+              )}
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 text-[11px]">
+              <div className="border border-slate-200 rounded-lg p-2 bg-slate-50/50 flex flex-col">
+                <h5 className="font-bold text-slate-900 border-b pb-1 mb-1">🏢 Hospitales y Clínicas ({hospitalesClinicas.length})</h5>
+                <ul className="space-y-1 max-h-20 overflow-y-auto">
+                  {hospitalesClinicas.length === 0 ? <li className="text-slate-400 italic text-[10px]">No hay centros de salud asignados en territorio.</li> :
+                    hospitalesClinicas.map(h => <li key={h.id} className="bg-white px-1.5 py-0.5 rounded border border-slate-200 font-medium text-slate-800">{h.name}</li>)
+                  }
+                </ul>
+              </div>
+
+              <div className="border border-slate-200 rounded-lg p-2 bg-slate-50/50 flex flex-col">
+                <h5 className="font-bold text-amber-800 border-b pb-1 mb-1">⚠️ Médicos Entrevistados ({medicosEntrevistados.length})</h5>
+                <ul className="space-y-1 max-h-20 overflow-y-auto">
+                  {medicosEntrevistados.length === 0 ? <li className="text-slate-400 italic text-[10px]">Sin médicos bajo evaluación activa.</li> :
+                    medicosEntrevistados.map(m => <li key={m.id} className="bg-amber-50/40 px-1.5 py-0.5 rounded border border-amber-200 text-slate-900"><span className="font-bold">{m.name || m.nombre}</span> — {m.specialty}</li>)
+                  }
+                </ul>
+              </div>
+
+              <div className="border border-slate-200 rounded-lg p-2 bg-slate-50/50 flex flex-col">
+                <h5 className="font-bold text-sky-800 border-b pb-1 mb-1">🏥 Proveedores de Salud ({proveedoresSalud.length})</h5>
+                <ul className="space-y-1 max-h-20 overflow-y-auto">
+                  {proveedoresSalud.length === 0 ? <li className="text-slate-400 italic text-[10px]">Sin proveedores de salud asignados en la zona.</li> :
+                    proveedoresSalud.map(p => <li key={p.id} className="bg-sky-50/40 px-1.5 py-0.5 rounded border border-sky-200 text-slate-800">{p.name}</li>)
+                  }
+                </ul>
+              </div>
+
+              <div className="border border-slate-200 rounded-lg p-2 bg-slate-50/50 flex flex-col">
+                <h5 className="font-bold text-purple-800 border-b pb-1 mb-1">💼 Personal Administrativo ({personalAdministrativo.length})</h5>
+                <ul className="space-y-1 max-h-20 overflow-y-auto">
+                  {personalAdministrativo.length === 0 ? <li className="text-slate-400 italic text-[10px]">Sin personal de salud reportado.</li> :
+                    personalAdministrativo.map(a => <li key={a.id} className="bg-purple-50/40 px-1.5 py-0.5 rounded border border-purple-200 text-slate-800"><span className="font-bold">{a.name || a.nombre}</span> — <span className="text-[9px] font-bold">{a.role || a.rol}</span></li>)
+                  }
+                </ul>
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3 text-xs mb-4">
-              <div className="p-3 border border-slate-200 rounded">
-                <h5 className="font-bold text-slate-800 border-b pb-1 mb-1">🏥 Hospitales y Clínicas</h5>
-                <p className="text-slate-400 italic text-[11px]">No hay centros de salud asignados en territorio.</p>
-              </div>
-              <div className="p-3 border border-slate-200 rounded">
-                <h5 className="font-bold text-slate-800 border-b pb-1 mb-1">⚠️ Médicos Entrevistados</h5>
-                <p className="text-slate-400 italic text-[11px]">Sin médicos bajo evaluación activa.</p>
-              </div>
-              <div className="p-3 border border-slate-200 rounded">
-                <h5 className="font-bold text-slate-800 border-b pb-1 mb-1">📲 Proveedores de Salud</h5>
-                <p className="text-slate-400 italic text-[11px]">Sin proveedores vinculados en la zona.</p>
-              </div>
-              <div className="p-3 border border-slate-200 rounded">
-                <h5 className="font-bold text-slate-800 border-b pb-1 mb-1">💼 Personal Administrativo</h5>
-                <p className="text-slate-400 italic text-[11px]">Sin personal de salud reportado.</p>
-              </div>
+            <div className="text-center text-[9px] text-slate-400 border-t pt-2 mt-auto">
+              Información de uso confidencial exclusivo para las actividades de control del CEH. Reporte de la Zona 3.
             </div>
 
           </div>
