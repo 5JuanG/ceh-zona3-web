@@ -30,7 +30,7 @@ export const InteractiveMap: React.FC<InteractiveMapPropsExtended> = ({
   filterByMemberEmail,
   cehMembersCustom
 }) => {
-  const { hospitals, cehMembers: globalMembers } = useApp();
+  const { hospitals, cehMembers: globalMembers, congregations: allCongregations } = useApp();
   const membersList = cehMembersCustom || globalMembers;
 
   const mapContainerRef = useRef<HTMLDivElement>(null);
@@ -86,7 +86,7 @@ export const InteractiveMap: React.FC<InteractiveMapPropsExtended> = ({
 
     if (membersList && membersList.length > 0) {
       membersList.forEach((member, index) => {
-        const listaCongs = member.congregations || member.congregaciones || [];
+        const listaCongs = member.assignedCongregationIds || [];
         
         if (Array.isArray(listaCongs)) {
           const memberColor = member.color || COLOR_PALETTE[index % COLOR_PALETTE.length];
@@ -104,7 +104,7 @@ export const InteractiveMap: React.FC<InteractiveMapPropsExtended> = ({
     let singleAssignedCongs: string[] = [];
     if (filterByMemberEmail && membersList) {
       const target = membersList.find(m => m.email?.toLowerCase().trim() === filterByMemberEmail.toLowerCase().trim());
-      const targetCongs = target ? (target.congregations || target.congregaciones || []) : [];
+      const targetCongs = target ? (target.assignedCongregationIds || []) : [];
       singleAssignedCongs = targetCongs.map((c: any) => normalizarTexto(c));
     }
 
@@ -141,7 +141,8 @@ export const InteractiveMap: React.FC<InteractiveMapPropsExtended> = ({
         }).addTo(map);
 
         const owner = congToMemberNameMap[cleanCongName] || "Sin asignar";
-        polygon.bindPopup(`<strong>Congregación:</strong> ${congName}<br/><strong>Asignado a:</strong> ${owner}`);
+        const congDisplayName = allCongregations?.find(c => c.number === congName)?.name || congName;
+        polygon.bindPopup(`<strong>Congregación:</strong> ${congDisplayName}<br/><strong>Asignado a:</strong> ${owner}`);
         polygonLayersRef.current.push(polygon);
       }
     });

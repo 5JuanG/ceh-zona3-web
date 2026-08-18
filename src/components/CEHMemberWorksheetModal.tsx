@@ -10,7 +10,7 @@ interface CEHMemberWorksheetModalProps {
 }
 
 export const CEHMemberWorksheetModal: React.FC<CEHMemberWorksheetModalProps> = ({ isOpen, onClose, initialMemberId }) => {
-  const { doctors, hospitals, cehMembers } = useApp();
+  const { doctors, hospitals, cehMembers, congregations } = useApp();
   const [selectedMemberId, setSelectedMemberId] = useState<string | null>(initialMemberId);
 
   useEffect(() => {
@@ -26,7 +26,11 @@ export const CEHMemberWorksheetModal: React.FC<CEHMemberWorksheetModalProps> = (
   const zonaAsignadaClean = zonaAsignadaRaw.toLowerCase().replace(/\s+/g, '');
   const correoMiembro = miembroActivo?.email || "";
   const colorMiembro = miembroActivo?.color || "#22c55e"; 
-  const listaCongregaciones = miembroActivo?.congregations || miembroActivo?.congregaciones || [];
+  const listaCongregacionesIds = miembroActivo?.assignedCongregationIds || [];
+  const listaCongregaciones = listaCongregacionesIds.map(num => {
+    const cong = congregations?.find(c => c.number === num);
+    return cong ? cong.name : num;
+  });
 
   const hospitalesClinicas = hospitals ? hospitals.filter(h => 
     (h.zone || '').toLowerCase().replace(/\s+/g, '') === zonaAsignadaClean
