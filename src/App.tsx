@@ -141,10 +141,13 @@ function MainLayout({ currentUser, onLogout }: MainLayoutProps) {
         )}
 
         {activeTab === 'map' && (
-          <InteractiveMap
-            onOpenHospitalModal={handleOpenHospitalModal}
-            onFilterDoctorsByHospital={handleFilterDoctorsByHospital}
-          />
+          <div className="-mx-4 sm:-mx-6 lg:-mx-8">
+            <InteractiveMap
+              onOpenHospitalModal={handleOpenHospitalModal}
+              onFilterDoctorsByHospital={handleFilterDoctorsByHospital}
+              expanded
+            />
+          </div>
         )}
 
         {activeTab === 'visits' && (
