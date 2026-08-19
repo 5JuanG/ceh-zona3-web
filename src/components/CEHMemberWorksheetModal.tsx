@@ -117,18 +117,16 @@ export const CEHMemberWorksheetModal: React.FC<CEHMemberWorksheetModalProps> = (
                 </div>
               </div>
 
-              <div className="space-y-1.5 mt-4 flex-1 flex flex-col">
+              <div className="space-y-1.5 mt-4">
                 <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wide">📍 Territorio Delimitado por Congregaciones</h4>
-                <div className="w-full rounded-xl border border-gray-200 bg-white p-1 overflow-hidden isolate relative flex-1" style={{ minHeight: '190mm' }}>
+                <div className="w-full rounded-xl border border-gray-200 bg-white p-1 overflow-hidden isolate relative" style={{ height: '760px' }}>
                   {correoMiembro ? (
-                    <div className="w-full h-full absolute inset-0 overflow-hidden">
-                      <InteractiveMap
-                        onOpenHospitalModal={() => {}}
-                        onFilterDoctorsByHospital={() => {}}
-                        readOnly={true}
-                        filterByMemberEmail={correoMiembro}
-                      />
-                    </div>
+                    <InteractiveMap
+                      onOpenHospitalModal={() => {}}
+                      onFilterDoctorsByHospital={() => {}}
+                      readOnly={true}
+                      filterByMemberEmail={correoMiembro}
+                    />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-xs text-slate-400 italic bg-slate-50">
                       Selecciona un miembro arriba para proyectar su mapa de linderos.

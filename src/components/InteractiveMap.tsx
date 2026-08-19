@@ -73,6 +73,7 @@ export const InteractiveMap: React.FC<InteractiveMapPropsExtended> = ({
     if (!expanded || !congSearchTerm.trim() || !allCongregations) return [];
     const term = normalizarTexto(congSearchTerm);
     return allCongregations
+      .filter(c => !c.isExcludedFromTerritory)
       .filter(c => normalizarTexto(c.name).includes(term) || c.number.includes(congSearchTerm.trim()))
       .filter(c => !!DEFAULT_CONG_BOUNDARIES[c.number])
       .slice(0, 8);
@@ -94,11 +95,24 @@ export const InteractiveMap: React.FC<InteractiveMapPropsExtended> = ({
 
     markersLayerRef.current = L.layerGroup().addTo(map);
 
+    // CORRECCIÓN: si el contenedor todavía no tiene su tamaño final cuando
+    // Leaflet se inicializa (por ejemplo, mientras la barra de filtros o el
+    // layout de la Hoja de Trabajo todavía se están acomodando), el mapa
+    // base se autocorrige al redimensionar, pero los polígonos vectoriales
+    // quedan con el origen de píxeles mal calculado y no se ven. Un
+    // ResizeObserver mantiene a Leaflet sincronizado con el tamaño real del
+    // contenedor en todo momento, no solo una vez al montar.
+    const resizeObserver = new ResizeObserver(() => {
+      mapInstanceRef.current?.invalidateSize();
+    });
+    resizeObserver.observe(mapContainerRef.current);
+
     setTimeout(() => {
-      if (mapInstanceRef.current) mapInstanceRef.current.invalidateSize();
-    }, 450);
+      mapInstanceRef.current?.invalidateSize();
+    }, 300);
 
     return () => {
+      resizeObserver.disconnect();
       if (mapInstanceRef.current) {
         mapInstanceRef.current.remove();
         mapInstanceRef.current = null;
@@ -109,6 +123,10 @@ export const InteractiveMap: React.FC<InteractiveMapPropsExtended> = ({
   useEffect(() => {
     const map = mapInstanceRef.current;
     if (!map) return;
+
+    // Asegura que Leaflet conozca el tamaño real del contenedor antes de
+    // calcular la posición de los polígonos; si no, quedan invisibles.
+    map.invalidateSize();
 
     polygonLayersRef.current.forEach(layer => layer.remove());
     polygonLayersRef.current.clear();
@@ -141,8 +159,16 @@ export const InteractiveMap: React.FC<InteractiveMapPropsExtended> = ({
     }
 
     const bounds = L.latLngBounds([]);
+    const excludedCongNumbers = new Set(
+      (allCongregations || []).filter(c => c.isExcludedFromTerritory).map(c => c.number)
+    );
 
     Object.entries(DEFAULT_CONG_BOUNDARIES).forEach(([congName, coords]) => {
+      // Las congregaciones excluidas del reparto territorial (idiomas/señas)
+      // suelen tener límites que se superponen con las demás y bloqueaban el
+      // hover; no se dibujan en el mapa.
+      if (excludedCongNumbers.has(congName)) return;
+
       const cleanCongName = normalizarTexto(congName);
       const isAssignedToCurrent = singleAssignedCongs.includes(cleanCongName);
 
@@ -181,7 +207,7 @@ export const InteractiveMap: React.FC<InteractiveMapPropsExtended> = ({
     if (effectiveFilterEmail && bounds.isValid()) {
       map.fitBounds(bounds, { padding: [20, 20] });
     }
-  }, [membersList, effectiveFilterEmail]);
+  }, [membersList, effectiveFilterEmail, allCongregations]);
 
   // Resalta y centra la congregación seleccionada desde el buscador
   useEffect(() => {
