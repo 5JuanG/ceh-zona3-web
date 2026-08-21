@@ -73,6 +73,7 @@ export interface Doctor {
   lastContactDate?: string;
   preferredContactHour?: string;
   hlc31?: Hlc31Data;
+  assignedCEHMemberId?: string; // Miembro del CEH responsable de este contacto/prospecto
   createdAt: string;
   updatedAt: string;
 }

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useApp } from '../context/AppContext';
-import { InteractiveMap } from './InteractiveMap';
+import { StaticTerritoryMap } from './StaticTerritoryMap';
 import { Users, X } from 'lucide-react';
 
 interface CEHMemberWorksheetModalProps {
@@ -12,6 +12,7 @@ interface CEHMemberWorksheetModalProps {
 export const CEHMemberWorksheetModal: React.FC<CEHMemberWorksheetModalProps> = ({ isOpen, onClose, initialMemberId }) => {
   const { doctors, hospitals, cehMembers, congregations } = useApp();
   const [selectedMemberId, setSelectedMemberId] = useState<string | null>(initialMemberId);
+  const [generandoPDF, setGenerandoPDF] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
@@ -24,7 +25,6 @@ export const CEHMemberWorksheetModal: React.FC<CEHMemberWorksheetModalProps> = (
   const miembroActivo = cehMembers ? cehMembers.find(m => m.id === selectedMemberId) : null;
   const zonaAsignadaRaw = miembroActivo?.zone || miembroActivo?.zona || "Zona 3";
   const zonaAsignadaClean = zonaAsignadaRaw.toLowerCase().replace(/\s+/g, '');
-  const correoMiembro = miembroActivo?.email || "";
   const colorMiembro = miembroActivo?.color || "#22c55e";
   const listaCongregacionesIds = miembroActivo?.assignedCongregationIds || [];
   const listaCongregaciones = listaCongregacionesIds.map(num => {
@@ -32,39 +32,99 @@ export const CEHMemberWorksheetModal: React.FC<CEHMemberWorksheetModalProps> = (
     return cong ? cong.name : num;
   });
 
-  const hospitalesClinicas = hospitals ? hospitals.filter(h =>
-    (h.zone || '').toLowerCase().replace(/\s+/g, '') === zonaAsignadaClean
+  // Un hospital/contacto pertenece a este integrante si:
+  // 1) fue asignado explícitamente a él (assignedCEHMemberId), o
+  // 2) está ubicado en una de sus congregaciones asignadas, o
+  // 3) (compatibilidad con datos antiguos) su "zona" de texto coincide.
+  const perteneceAMiembro = (registro: { assignedCEHMemberId?: string; congregationNumber?: string; zone?: string }) => {
+    if (!selectedMemberId) return false;
+    if (registro.assignedCEHMemberId) return registro.assignedCEHMemberId === selectedMemberId;
+    if (registro.congregationNumber) return listaCongregacionesIds.includes(registro.congregationNumber);
+    return (registro.zone || '').toLowerCase().replace(/\s+/g, '') === zonaAsignadaClean;
+  };
+
+  const hospitalesClinicas = hospitals ? hospitals.filter(perteneceAMiembro) : [];
+
+  const idsHospitalesDelMiembro = new Set(hospitalesClinicas.map(h => h.id));
+
+  // Un médico/contacto pertenece a este integrante si fue asignado directamente
+  // a él, o si está vinculado a alguno de los hospitales que sí le pertenecen.
+  const perteneceDoctorAMiembro = (d: { assignedCEHMemberId?: string; hospitalIds?: string[] }) => {
+    if (!selectedMemberId) return false;
+    if (d.assignedCEHMemberId) return d.assignedCEHMemberId === selectedMemberId;
+    return (d.hospitalIds || []).some(hid => idsHospitalesDelMiembro.has(hid));
+  };
+
+  const medicosColaboradores = doctors ? doctors.filter(d =>
+    perteneceDoctorAMiembro(d) && (d.type === 'colaborador' || d.type === 'consultor' || !d.type)
   ) : [];
 
-  const medicosEntrevistados = doctors ? doctors.filter(d =>
-    (d.zone || '').toLowerCase().replace(/\s+/g, '') === zonaAsignadaClean &&
-    (d.type === 'prospecto' || d.notes?.toLowerCase().includes('entrevista'))
+  const proveedoresSalud = doctors ? doctors.filter(d =>
+    perteneceDoctorAMiembro(d) && d.type === 'proveedor_salud'
   ) : [];
 
-  const proveedoresSalud = hospitals ? hospitals.filter(h =>
-    (h.zone || '').toLowerCase().replace(/\s+/g, '') === zonaAsignadaClean &&
-    (h.name?.toLowerCase().includes('proveedor') || h.notes?.toLowerCase().includes('proveedor'))
+  const personalAdministrativoDoctores = doctors ? doctors.filter(d =>
+    perteneceDoctorAMiembro(d) && d.type === 'contacto_administrativo'
   ) : [];
 
-  const personalAdministrativo = cehMembers ? cehMembers.filter(m =>
-    (m.zone || m.zona || '').toLowerCase().replace(/\s+/g, '') === zonaAsignadaClean &&
-    (m.role?.toLowerCase().includes('admin') || m.role?.toLowerCase().includes('secretario'))
+  const personalAdministrativoCEH = cehMembers ? cehMembers.filter(m =>
+    m.id !== selectedMemberId &&
+    (m.role?.toLowerCase().includes('admin') || m.role?.toLowerCase().includes('secretario')) &&
+    (m.assignedCongregationIds || []).some(id => listaCongregacionesIds.includes(id))
   ) : [];
 
   const handleDescargarPDF = async () => {
-    const html2pdf = (await import('html2pdf.js')).default;
-    const element = document.getElementById('hoja-trabajo-content');
-    if (!element) return alert('Error: No se encontró el contenedor de la hoja de trabajo.');
+    if (generandoPDF) return;
+    const pagina1 = document.getElementById('hoja-trabajo-pagina-1');
+    const pagina2 = document.getElementById('hoja-trabajo-pagina-2');
+    if (!pagina1 || !pagina2) return alert('Error: No se encontró el contenedor de la hoja de trabajo.');
 
-    const opt = {
-      margin: 8,
-      filename: `Hoja_Trabajo_${zonaAsignadaRaw.replace(/\s+/g, '_')}_${miembroActivo?.name?.replace(/\s+/g, '_') || 'Miembro'}.pdf`,
-      image: { type: 'jpeg', quality: 0.98 },
-      html2canvas: { scale: 2, useCORS: true, logging: false, allowTaint: true },
-      jsPDF: { unit: 'mm', format: 'letter', orientation: 'portrait' },
-      pagebreak: { mode: ['css', 'legacy'] }
-    };
-    html2pdf().set(opt).from(element).save();
+    setGenerandoPDF(true);
+    try {
+      // Usamos html2canvas-pro (no el html2canvas clásico que trae html2pdf.js)
+      // porque Tailwind v4 genera colores en formato oklch(), y la versión
+      // clásica de html2canvas no sabe interpretarlos: eso es lo que
+      // provocaba el error y el congelamiento al generar el PDF.
+      const { default: html2canvas } = await import('html2canvas-pro');
+      const { jsPDF } = await import('jspdf');
+
+      const pdf = new jsPDF({ unit: 'mm', format: 'letter', orientation: 'portrait' });
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+
+      const agregarPaginaAlPDF = async (elemento: HTMLElement, esPrimera: boolean) => {
+        const canvas = await html2canvas(elemento, {
+          scale: 1.5,
+          backgroundColor: '#ffffff',
+          useCORS: false,
+          logging: false
+        });
+        const imgData = canvas.toDataURL('image/jpeg', 0.95);
+        const imgHeightMM = (canvas.height * pageWidth) / canvas.width;
+
+        if (!esPrimera) pdf.addPage();
+
+        if (imgHeightMM <= pageHeight) {
+          pdf.addImage(imgData, 'JPEG', 0, 0, pageWidth, imgHeightMM);
+        } else {
+          // Si el contenido resultó más alto que una hoja carta, lo
+          // escalamos para que quepa completo en una sola página.
+          const factor = pageHeight / imgHeightMM;
+          pdf.addImage(imgData, 'JPEG', 0, 0, pageWidth * factor, pageHeight);
+        }
+      };
+
+      await agregarPaginaAlPDF(pagina1, true);
+      await agregarPaginaAlPDF(pagina2, false);
+
+      const filename = `Hoja_Trabajo_${zonaAsignadaRaw.replace(/\s+/g, '_')}_${miembroActivo?.name?.replace(/\s+/g, '_') || 'Miembro'}.pdf`;
+      pdf.save(filename);
+    } catch (err) {
+      console.error('Error generando el PDF de la Hoja de Trabajo:', err);
+      alert('Ocurrió un error al generar el PDF. Intenta de nuevo; si el problema persiste, recarga la página.');
+    } finally {
+      setGenerandoPDF(false);
+    }
   };
 
   return (
@@ -86,7 +146,13 @@ export const CEHMemberWorksheetModal: React.FC<CEHMemberWorksheetModalProps> = (
             </select>
           </div>
           <div className="flex items-center gap-3">
-            <button onClick={handleDescargarPDF} className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-xs font-bold shadow-md transition-all">Descargar PDF</button>
+            <button
+              onClick={handleDescargarPDF}
+              disabled={generandoPDF}
+              className="bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 disabled:cursor-not-allowed text-white px-4 py-2 rounded-xl text-xs font-bold shadow-md transition-all"
+            >
+              {generandoPDF ? 'Generando PDF...' : 'Descargar PDF'}
+            </button>
             <button onClick={onClose} className="text-slate-400 hover:text-white px-2 text-xs font-medium border border-slate-700 rounded-lg py-1.5 bg-slate-800 cursor-pointer">Cerrar</button>
           </div>
         </div>
@@ -97,7 +163,7 @@ export const CEHMemberWorksheetModal: React.FC<CEHMemberWorksheetModalProps> = (
             className="bg-white shadow-2xl w-full max-w-[215mm] text-slate-900 rounded-sm font-sans"
           >
             {/* ===================== PÁGINA 1: Encabezado + Mapa a toda la hoja ===================== */}
-            <div className="p-8 flex flex-col" style={{ minHeight: '260mm' }}>
+            <div id="hoja-trabajo-pagina-1" className="p-8 flex flex-col" style={{ minHeight: '260mm' }}>
               <div className="text-center border-b-2 border-slate-900 pb-2">
                 <h2 className="text-base font-black uppercase tracking-wider text-slate-900">Comité de Enlace con Hospitales</h2>
                 <p className="text-xs font-bold text-slate-500 tracking-tight">Reporte Interno de Operación y Control Territorial</p>
@@ -119,13 +185,12 @@ export const CEHMemberWorksheetModal: React.FC<CEHMemberWorksheetModalProps> = (
 
               <div className="space-y-1.5 mt-4">
                 <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wide">📍 Territorio Delimitado por Congregaciones</h4>
-                <div className="w-full rounded-xl border border-gray-200 bg-white p-1 overflow-hidden isolate relative" style={{ height: '760px' }}>
-                  {correoMiembro ? (
-                    <InteractiveMap
-                      onOpenHospitalModal={() => {}}
-                      onFilterDoctorsByHospital={() => {}}
-                      readOnly={true}
-                      filterByMemberEmail={correoMiembro}
+                <div className="w-full rounded-xl border border-gray-200 bg-white p-1 overflow-hidden isolate relative" style={{ height: '480px' }}>
+                  {selectedMemberId ? (
+                    <StaticTerritoryMap
+                      congregationIds={listaCongregacionesIds}
+                      color={colorMiembro}
+                      allCongregations={congregations}
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-xs text-slate-400 italic bg-slate-50">
@@ -141,50 +206,82 @@ export const CEHMemberWorksheetModal: React.FC<CEHMemberWorksheetModalProps> = (
               </div>
             </div>
 
-            {/* Salto de página para la exportación a PDF (html2pdf detecta esta clase automáticamente) */}
-            <div className="html2pdf__page-break" />
+            {/* Salto de página para la exportación a PDF */}
 
             {/* ===================== PÁGINA 2: Los 4 campos de control ===================== */}
-            <div className="p-8 flex flex-col" style={{ minHeight: '260mm' }}>
+            <div id="hoja-trabajo-pagina-2" className="p-8 flex flex-col" style={{ minHeight: '260mm' }}>
               <div className="text-center border-b-2 border-slate-900 pb-2 mb-4">
                 <h2 className="text-base font-black uppercase tracking-wider text-slate-900">Detalle de Contactos y Personal</h2>
                 <p className="text-xs font-bold text-slate-500 tracking-tight">{miembroActivo?.name || miembroActivo?.nombre || ''} — {zonaAsignadaRaw}</p>
               </div>
 
-              <div className="grid grid-cols-2 gap-4 text-xs flex-1">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs flex-1">
                 <div className="border border-slate-200 rounded-lg p-3 bg-slate-50/50 flex flex-col">
                   <h5 className="font-bold text-slate-900 border-b pb-1.5 mb-2 text-sm">🏢 Hospitales y Clínicas ({hospitalesClinicas.length})</h5>
-                  <ul className="space-y-1.5 overflow-y-auto flex-1">
+                  <ul className="space-y-2 overflow-y-auto flex-1">
                     {hospitalesClinicas.length === 0 ? <li className="text-slate-400 italic text-[11px]">No hay centros de salud asignados en territorio.</li> :
-                      hospitalesClinicas.map(h => <li key={h.id} className="bg-white px-2 py-1 rounded border border-slate-200 font-medium text-slate-800">{h.name}</li>)
+                      hospitalesClinicas.map(h => (
+                        <li key={h.id} className="bg-white px-2.5 py-1.5 rounded border border-slate-200">
+                          <span className="font-bold text-slate-800">{h.name}</span>
+                          <p className="text-[10.5px] text-slate-600 leading-snug mt-0.5">
+                            {h.notes && h.notes.trim() ? h.notes : <span className="italic text-slate-400">Sin reseña registrada aún.</span>}
+                          </p>
+                        </li>
+                      ))
                     }
                   </ul>
                 </div>
 
                 <div className="border border-slate-200 rounded-lg p-3 bg-slate-50/50 flex flex-col">
-                  <h5 className="font-bold text-amber-800 border-b pb-1.5 mb-2 text-sm">⚠️ Médicos Entrevistados ({medicosEntrevistados.length})</h5>
-                  <ul className="space-y-1.5 overflow-y-auto flex-1">
-                    {medicosEntrevistados.length === 0 ? <li className="text-slate-400 italic text-[11px]">Sin médicos bajo evaluación activa.</li> :
-                      medicosEntrevistados.map(m => <li key={m.id} className="bg-amber-50/40 px-2 py-1 rounded border border-amber-200 text-slate-900"><span className="font-bold">{m.name || m.nombre}</span> — {m.specialty}</li>)
+                  <h5 className="font-bold text-amber-800 border-b pb-1.5 mb-2 text-sm">⚕️ Médicos Colaboradores / Consultores ({medicosColaboradores.length})</h5>
+                  <ul className="space-y-2 overflow-y-auto flex-1">
+                    {medicosColaboradores.length === 0 ? <li className="text-slate-400 italic text-[11px]">Sin médicos colaboradores o consultores en territorio.</li> :
+                      medicosColaboradores.map(m => (
+                        <li key={m.id} className="bg-amber-50/40 px-2.5 py-1.5 rounded border border-amber-200">
+                          <span className="font-bold text-slate-900">{m.name || m.nombre}</span> <span className="text-[10px] font-semibold text-amber-700">— {m.specialty}</span>
+                          <p className="text-[10.5px] text-slate-600 leading-snug mt-0.5">
+                            {m.notes && m.notes.trim() ? m.notes : <span className="italic text-slate-400">Sin reseña registrada aún.</span>}
+                          </p>
+                        </li>
+                      ))
                     }
                   </ul>
                 </div>
 
                 <div className="border border-slate-200 rounded-lg p-3 bg-slate-50/50 flex flex-col">
                   <h5 className="font-bold text-sky-800 border-b pb-1.5 mb-2 text-sm">🏥 Proveedores de Salud ({proveedoresSalud.length})</h5>
-                  <ul className="space-y-1.5 overflow-y-auto flex-1">
-                    {proveedoresSalud.length === 0 ? <li className="text-slate-400 italic text-[11px]">Sin proveedores de salud asignados en la zona.</li> :
-                      proveedoresSalud.map(p => <li key={p.id} className="bg-sky-50/40 px-2 py-1 rounded border border-sky-200 text-slate-800">{p.name}</li>)
+                  <ul className="space-y-2 overflow-y-auto flex-1">
+                    {proveedoresSalud.length === 0 ? <li className="text-slate-400 italic text-[11px]">Sin proveedores de salud de interés registrados en la zona.</li> :
+                      proveedoresSalud.map(p => (
+                        <li key={p.id} className="bg-sky-50/40 px-2.5 py-1.5 rounded border border-sky-200">
+                          <span className="font-bold text-slate-800">{p.name || p.nombre}</span> <span className="text-[10px] font-semibold text-sky-700">— {p.specialty}</span>
+                          <p className="text-[10.5px] text-slate-600 leading-snug mt-0.5">
+                            {p.notes && p.notes.trim() ? p.notes : <span className="italic text-slate-400">Sin reseña registrada aún.</span>}
+                          </p>
+                        </li>
+                      ))
                     }
                   </ul>
                 </div>
 
                 <div className="border border-slate-200 rounded-lg p-3 bg-slate-50/50 flex flex-col">
-                  <h5 className="font-bold text-purple-800 border-b pb-1.5 mb-2 text-sm">💼 Personal Administrativo ({personalAdministrativo.length})</h5>
-                  <ul className="space-y-1.5 overflow-y-auto flex-1">
-                    {personalAdministrativo.length === 0 ? <li className="text-slate-400 italic text-[11px]">Sin personal de salud reportado.</li> :
-                      personalAdministrativo.map(a => <li key={a.id} className="bg-purple-50/40 px-2 py-1 rounded border border-purple-200 text-slate-800"><span className="font-bold">{a.name || a.nombre}</span> — <span className="text-[10px] font-bold">{a.role || a.rol}</span></li>)
-                    }
+                  <h5 className="font-bold text-purple-800 border-b pb-1.5 mb-2 text-sm">💼 Personal Administrativo ({personalAdministrativoDoctores.length + personalAdministrativoCEH.length})</h5>
+                  <ul className="space-y-2 overflow-y-auto flex-1">
+                    {(personalAdministrativoDoctores.length + personalAdministrativoCEH.length) === 0 ? <li className="text-slate-400 italic text-[11px]">Sin personal administrativo reportado.</li> : <>
+                      {personalAdministrativoDoctores.map(a => (
+                        <li key={a.id} className="bg-purple-50/40 px-2.5 py-1.5 rounded border border-purple-200">
+                          <span className="font-bold text-slate-800">{a.name || a.nombre}</span>
+                          <p className="text-[10.5px] text-slate-600 leading-snug mt-0.5">
+                            {a.notes && a.notes.trim() ? a.notes : <span className="italic text-slate-400">Sin reseña registrada aún.</span>}
+                          </p>
+                        </li>
+                      ))}
+                      {personalAdministrativoCEH.map(a => (
+                        <li key={a.id} className="bg-purple-50/40 px-2.5 py-1.5 rounded border border-purple-200">
+                          <span className="font-bold text-slate-800">{a.name || a.nombre}</span> <span className="text-[10px] font-bold text-purple-700">— {a.role || a.rol}</span>
+                        </li>
+                      ))}
+                    </>}
                   </ul>
                 </div>
               </div>

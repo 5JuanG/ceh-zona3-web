@@ -256,10 +256,13 @@ export const DoctorModal: React.FC<DoctorModalProps> = ({ isOpen, onClose, docto
       cehMemberName
     };
 
+    const responsibleMember = cehMembers.find(m => m.name === cehMemberName);
+
     return {
       name: fullName,
       title,
       type,
+      assignedCEHMemberId: responsibleMember?.id,
       specialty: (specialty1 as Specialty) || specialty,
       subSpecialty: subSpecialty1 || subSpecialty,
       hospitalIds: selectedHospitalIds,
@@ -499,6 +502,46 @@ export const DoctorModal: React.FC<DoctorModalProps> = ({ isOpen, onClose, docto
                         <span>Otro (especifique en Comentarios)</span>
                       </label>
                     </div>
+                  </div>
+                </div>
+
+                <div className="bg-sky-50 border border-sky-200 rounded-xl p-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block font-bold text-slate-800 mb-1">
+                      Clasificación en el sistema (para la Hoja de Trabajo) <span className="text-rose-500">*</span>
+                    </label>
+                    <select
+                      value={type}
+                      onChange={e => setType(e.target.value as DoctorType)}
+                      className="w-full p-2.5 rounded-xl border border-slate-300 font-bold text-slate-900"
+                    >
+                      <option value="colaborador">Médico Colaborador</option>
+                      <option value="consultor">Médico Consultor</option>
+                      <option value="proveedor_salud">Proveedor de Salud (aún sin confirmar / de interés)</option>
+                      <option value="contacto_administrativo">Personal Administrativo</option>
+                    </select>
+                    <p className="text-[10px] text-slate-500 mt-1">
+                      Usa "Proveedor de Salud" para médicos con una especialidad de interés que todavía no se consideran colaboradores o consultores.
+                    </p>
+                  </div>
+
+                  <div>
+                    <label className="block font-bold text-slate-800 mb-1">
+                      Miembro del CEH responsable
+                    </label>
+                    <select
+                      value={cehMemberName}
+                      onChange={e => setCehMemberName(e.target.value)}
+                      className="w-full p-2.5 rounded-xl border border-slate-300 font-medium text-slate-900"
+                    >
+                      <option value="">-- Sin asignar --</option>
+                      {cehMembers.map(m => (
+                        <option key={m.id} value={m.name}>{m.name}</option>
+                      ))}
+                    </select>
+                    <p className="text-[10px] text-slate-500 mt-1">
+                      Determina en la Hoja de Trabajo de qué integrante aparecerá este contacto.
+                    </p>
                   </div>
                 </div>
 

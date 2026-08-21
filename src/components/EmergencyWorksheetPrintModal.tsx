@@ -20,7 +20,7 @@ export const EmergencyWorksheetPrintModal: React.FC<EmergencyWorksheetPrintModal
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col items-center justify-start bg-slate-900/80 backdrop-blur-sm overflow-y-auto p-2 sm:p-6 print:p-0 print:bg-white print:static print:overflow-visible">
+    <div className="fixed inset-0 z-50 flex flex-col items-center justify-start bg-slate-900/80 backdrop-blur-sm overflow-y-auto overflow-x-hidden p-2 sm:p-6 print:p-0 print:bg-white print:static print:overflow-visible">
       
       {/* Action Bar (hidden when printing) */}
       <div className="w-full max-w-4xl bg-slate-900 text-white rounded-t-xl p-4 flex items-center justify-between shadow-lg border-b border-slate-700 print:hidden sticky top-2 z-20">
@@ -250,10 +250,10 @@ export const EmergencyWorksheetPrintModal: React.FC<EmergencyWorksheetPrintModal
             <div className="bg-[#f2a770] font-bold uppercase text-center text-[11px] py-0.5 border-b border-slate-800 text-slate-950">
               RESULTADOS DE LOS ANÁLISIS DE LABORATORIO
             </div>
-            <div className="grid grid-cols-12 text-[10px]">
-              
+            <div className="grid grid-cols-1 sm:grid-cols-12 print:grid-cols-12 text-[10px]">
+
               {/* Lab entries list */}
-              <div className="col-span-7 p-1 border-r border-slate-800 space-y-1">
+              <div className="sm:col-span-7 print:col-span-7 p-1 sm:border-r print:border-r border-b sm:border-b-0 print:border-b-0 border-slate-800 space-y-1">
                 {(!worksheet.labResults || worksheet.labResults.length === 0) ? (
                   <div className="text-slate-500 italic p-2 text-center">No hay registros de laboratorio cargados.</div>
                 ) : (
@@ -274,45 +274,47 @@ export const EmergencyWorksheetPrintModal: React.FC<EmergencyWorksheetPrintModal
               </div>
 
               {/* Standard Reference Table */}
-              <div className="col-span-5 p-1 bg-slate-50">
+              <div className="sm:col-span-5 print:col-span-5 p-1 bg-slate-50">
                 <div className="text-center font-bold text-[10px] text-slate-900">Valores normales de laboratorio</div>
                 <div className="text-[8.5px] italic text-center text-slate-600 mb-1">Referencia: Blood (2.ª edición). El embarazo y la edad alteran estos valores.</div>
-                <table className="w-full text-[9px] border-collapse border border-slate-800 text-center">
-                  <thead>
-                    <tr className="bg-slate-200 font-bold">
-                      <th className="border border-slate-800 p-0.5">Grupo</th>
-                      <th className="border border-slate-800 p-0.5">Hemoglobina (Hb)</th>
-                      <th className="border border-slate-800 p-0.5">Hematocrito (Hto)</th>
-                      <th className="border border-slate-800 p-0.5">Plaquetas (Plts)</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td className="border border-slate-800 p-0.5 font-semibold bg-slate-100">Hombres</td>
-                      <td className="border border-slate-800 p-0.5">13.5-18 g/dl</td>
-                      <td className="border border-slate-800 p-0.5">42-52%</td>
-                      <td className="border border-slate-800 p-0.5">150.000-450.000/μL</td>
-                    </tr>
-                    <tr>
-                      <td className="border border-slate-800 p-0.5 font-semibold bg-slate-100">Mujeres</td>
-                      <td className="border border-slate-800 p-0.5">12-16 g/dl</td>
-                      <td className="border border-slate-800 p-0.5">38-46%</td>
-                      <td className="border border-slate-800 p-0.5">150.000-450.000/μL</td>
-                    </tr>
-                    <tr>
-                      <td className="border border-slate-800 p-0.5 font-semibold bg-slate-100">Niños</td>
-                      <td className="border border-slate-800 p-0.5">11-13 g/dl</td>
-                      <td className="border border-slate-800 p-0.5">30-40%</td>
-                      <td className="border border-slate-800 p-0.5">150.000-450.000/μL</td>
-                    </tr>
-                    <tr>
-                      <td className="border border-slate-800 p-0.5 font-semibold bg-slate-100">Bebés</td>
-                      <td className="border border-slate-800 p-0.5">15-24 g/dl</td>
-                      <td className="border border-slate-800 p-0.5">55-68%</td>
-                      <td className="border border-slate-800 p-0.5">200.000-400.000/μL</td>
-                    </tr>
-                  </tbody>
-                </table>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-[9px] border-collapse border border-slate-800 text-center">
+                    <thead>
+                      <tr className="bg-slate-200 font-bold">
+                        <th className="border border-slate-800 p-0.5 whitespace-nowrap">Grupo</th>
+                        <th className="border border-slate-800 p-0.5 whitespace-nowrap">Hemoglobina (Hb)</th>
+                        <th className="border border-slate-800 p-0.5 whitespace-nowrap">Hematocrito (Hto)</th>
+                        <th className="border border-slate-800 p-0.5 whitespace-nowrap">Plaquetas (Plts)</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td className="border border-slate-800 p-0.5 font-semibold bg-slate-100 whitespace-nowrap">Hombres</td>
+                        <td className="border border-slate-800 p-0.5 whitespace-nowrap">13.5-18 g/dl</td>
+                        <td className="border border-slate-800 p-0.5 whitespace-nowrap">42-52%</td>
+                        <td className="border border-slate-800 p-0.5 whitespace-nowrap">150.000-450.000/μL</td>
+                      </tr>
+                      <tr>
+                        <td className="border border-slate-800 p-0.5 font-semibold bg-slate-100 whitespace-nowrap">Mujeres</td>
+                        <td className="border border-slate-800 p-0.5 whitespace-nowrap">12-16 g/dl</td>
+                        <td className="border border-slate-800 p-0.5 whitespace-nowrap">38-46%</td>
+                        <td className="border border-slate-800 p-0.5 whitespace-nowrap">150.000-450.000/μL</td>
+                      </tr>
+                      <tr>
+                        <td className="border border-slate-800 p-0.5 font-semibold bg-slate-100 whitespace-nowrap">Niños</td>
+                        <td className="border border-slate-800 p-0.5 whitespace-nowrap">11-13 g/dl</td>
+                        <td className="border border-slate-800 p-0.5 whitespace-nowrap">30-40%</td>
+                        <td className="border border-slate-800 p-0.5 whitespace-nowrap">150.000-450.000/μL</td>
+                      </tr>
+                      <tr>
+                        <td className="border border-slate-800 p-0.5 font-semibold bg-slate-100 whitespace-nowrap">Bebés</td>
+                        <td className="border border-slate-800 p-0.5 whitespace-nowrap">15-24 g/dl</td>
+                        <td className="border border-slate-800 p-0.5 whitespace-nowrap">55-68%</td>
+                        <td className="border border-slate-800 p-0.5 whitespace-nowrap">200.000-400.000/μL</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
               </div>
 
             </div>

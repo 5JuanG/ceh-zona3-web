@@ -3,7 +3,7 @@ import L from 'leaflet';
 import { useApp } from '../context/AppContext';
 import { Hospital } from '../types';
 import { CONGREGATION_BOUNDARIES } from '../data/congregationBoundaries';
-import { Search, Users, MapPin, X } from 'lucide-react';
+import { Search, Users, MapPin, X, Plus } from 'lucide-react';
 import 'leaflet/dist/leaflet.css';
 
 interface InteractiveMapProps {
@@ -18,6 +18,11 @@ interface InteractiveMapPropsExtended extends InteractiveMapProps {
   /** Cuando es true (uso en la pestaña principal del mapa), se muestran los
    * filtros de búsqueda y el contenedor ocupa mucho más espacio vertical. */
   expanded?: boolean;
+  /** Modo selector de ubicación: usado dentro del formulario de Hospital
+   * para marcar/arrastrar el pin de un hospital nuevo o en edición. */
+  pickerMode?: boolean;
+  pickerCoordinates?: { lat: number; lng: number } | null;
+  onPickerCoordinatesChange?: (coords: { lat: number; lng: number }) => void;
 }
 
 const DEFAULT_CONG_BOUNDARIES: Record<string, [number, number][]> = CONGREGATION_BOUNDARIES;
@@ -32,21 +37,46 @@ const normalizarTexto = (txt: string) => {
   return txt.toString().trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 };
 
+const hospitalDivIcon = L.divIcon({
+  html: `<div style="background:#dc2626;width:26px;height:26px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);border:2px solid white;box-shadow:0 1px 4px rgba(0,0,0,0.4);display:flex;align-items:center;justify-content:center;">
+           <span style="transform:rotate(45deg);font-size:13px;">🏥</span>
+         </div>`,
+  className: '',
+  iconSize: [26, 26],
+  iconAnchor: [13, 26],
+  popupAnchor: [0, -26]
+});
+
+const pickerDivIcon = L.divIcon({
+  html: `<div style="background:#2563eb;width:30px;height:30px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);border:3px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;">
+           <span style="transform:rotate(45deg);font-size:15px;">📍</span>
+         </div>`,
+  className: '',
+  iconSize: [30, 30],
+  iconAnchor: [15, 30],
+  popupAnchor: [0, -30]
+});
+
 export const InteractiveMap: React.FC<InteractiveMapPropsExtended> = ({
   onOpenHospitalModal,
   onFilterDoctorsByHospital,
   readOnly = false,
   filterByMemberEmail,
   cehMembersCustom,
-  expanded = false
+  expanded = false,
+  pickerMode = false,
+  pickerCoordinates = null,
+  onPickerCoordinatesChange
 }) => {
-  const { hospitals, cehMembers: globalMembers, congregations: allCongregations } = useApp();
+  const { hospitals, cehMembers: globalMembers, congregations: allCongregations, updateHospital } = useApp();
   const membersList = cehMembersCustom || globalMembers;
 
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const polygonLayersRef = useRef<Map<string, L.Polygon>>(new Map());
   const markersLayerRef = useRef<L.LayerGroup | null>(null);
+  const pickerMarkerRef = useRef<L.Marker | null>(null);
+  const lastExternalPickerCoords = useRef<string>('');
 
   const [mapCenter] = useState<[number, number]>([25.6866, -100.3161]);
   const [zoomLevel] = useState<number>(11);
@@ -119,6 +149,78 @@ export const InteractiveMap: React.FC<InteractiveMapPropsExtended> = ({
       }
     };
   }, []);
+
+  // --- Modo selector de ubicación (usado dentro del formulario de Hospital) ---
+  // Un clic en cualquier parte del mapa coloca/mueve el pin azul; también se
+  // puede arrastrar el pin directamente para afinar la posición.
+  useEffect(() => {
+    const map = mapInstanceRef.current;
+    if (!map || !pickerMode) return;
+
+    const placeOrMovePicker = (lat: number, lng: number, notify: boolean) => {
+      if (pickerMarkerRef.current) {
+        pickerMarkerRef.current.setLatLng([lat, lng]);
+      } else {
+        pickerMarkerRef.current = L.marker([lat, lng], { icon: pickerDivIcon, draggable: true }).addTo(map);
+        pickerMarkerRef.current.on('dragend', () => {
+          const pos = pickerMarkerRef.current?.getLatLng();
+          if (pos) {
+            lastExternalPickerCoords.current = `${pos.lat.toFixed(6)},${pos.lng.toFixed(6)}`;
+            onPickerCoordinatesChange?.({ lat: pos.lat, lng: pos.lng });
+          }
+        });
+      }
+      if (notify) {
+        lastExternalPickerCoords.current = `${lat.toFixed(6)},${lng.toFixed(6)}`;
+        onPickerCoordinatesChange?.({ lat, lng });
+      }
+    };
+
+    const handleClick = (e: L.LeafletMouseEvent) => {
+      placeOrMovePicker(e.latlng.lat, e.latlng.lng, true);
+    };
+
+    map.on('click', handleClick);
+    map.getContainer().style.cursor = 'crosshair';
+
+    return () => {
+      map.off('click', handleClick);
+      map.getContainer().style.cursor = '';
+    };
+  }, [pickerMode, onPickerCoordinatesChange]);
+
+  // Sincroniza el pin del selector cuando las coordenadas cambian desde
+  // afuera (por ejemplo, al pegar y analizar un enlace de Google Maps).
+  useEffect(() => {
+    const map = mapInstanceRef.current;
+    if (!map || !pickerMode) return;
+
+    if (!pickerCoordinates) {
+      if (pickerMarkerRef.current) {
+        pickerMarkerRef.current.remove();
+        pickerMarkerRef.current = null;
+      }
+      return;
+    }
+
+    const key = `${pickerCoordinates.lat.toFixed(6)},${pickerCoordinates.lng.toFixed(6)}`;
+    if (key === lastExternalPickerCoords.current && pickerMarkerRef.current) return;
+    lastExternalPickerCoords.current = key;
+
+    if (pickerMarkerRef.current) {
+      pickerMarkerRef.current.setLatLng([pickerCoordinates.lat, pickerCoordinates.lng]);
+    } else {
+      pickerMarkerRef.current = L.marker([pickerCoordinates.lat, pickerCoordinates.lng], { icon: pickerDivIcon, draggable: true }).addTo(map);
+      pickerMarkerRef.current.on('dragend', () => {
+        const pos = pickerMarkerRef.current?.getLatLng();
+        if (pos) {
+          lastExternalPickerCoords.current = `${pos.lat.toFixed(6)},${pos.lng.toFixed(6)}`;
+          onPickerCoordinatesChange?.({ lat: pos.lat, lng: pos.lng });
+        }
+      });
+    }
+    map.setView([pickerCoordinates.lat, pickerCoordinates.lng], Math.max(map.getZoom(), 15), { animate: true });
+  }, [pickerCoordinates, pickerMode]);
 
   useEffect(() => {
     const map = mapInstanceRef.current;
@@ -222,27 +324,47 @@ export const InteractiveMap: React.FC<InteractiveMapPropsExtended> = ({
     layer.openPopup();
   }, [selectedCongNumber]);
 
+  // Pines de hospitales/clínicas: se leen de `coordinates.lat/lng` (formato
+  // real de los datos). En el mapa principal (no solo-lectura, no selector)
+  // son arrastrables para corregir su ubicación al instante, y un clic
+  // sencillo abre el formulario de edición.
   useEffect(() => {
     const map = mapInstanceRef.current;
-    if (!map || !markersLayerRef.current) return;
+    if (!map || !markersLayerRef.current || pickerMode) return;
 
     markersLayerRef.current.clearLayers();
 
     if (hospitals && hospitals.length > 0) {
       hospitals.forEach(h => {
-        if (!h.lat || !h.lng) return;
+        const lat = h.coordinates?.lat;
+        const lng = h.coordinates?.lng;
+        if (lat === undefined || lng === undefined || lat === null || lng === null) return;
 
         if (effectiveFilterEmail && membersList) {
           const target = membersList.find(m => m.email?.toLowerCase().trim() === effectiveFilterEmail.toLowerCase().trim());
-          if (target && h.zone !== target.zone) return;
+          if (target && h.congregationNumber && !(target.assignedCongregationIds || []).includes(h.congregationNumber)) return;
         }
 
-        const marker = L.marker([h.lat, h.lng]);
-        marker.bindPopup(`<strong>${h.name}</strong><br/>Urgencias: ${h.phoneEmergency || 'N/A'}`);
+        const canEdit = !readOnly;
+        const marker = L.marker([lat, lng], {
+          icon: hospitalDivIcon,
+          draggable: canEdit
+        });
+
+        marker.bindPopup(`<strong>${h.name}</strong><br/>Urgencias: ${h.phoneEmergency || 'N/A'}${canEdit ? '<br/><span style="color:#64748b;font-size:11px;">Clic para editar · arrastra el pin para reubicar</span>' : ''}`);
+
+        if (canEdit) {
+          marker.on('dragend', () => {
+            const pos = marker.getLatLng();
+            updateHospital(h.id, { coordinates: { lat: pos.lat, lng: pos.lng } });
+          });
+          marker.on('click', () => onOpenHospitalModal(h));
+        }
+
         markersLayerRef.current?.addLayer(marker);
       });
     }
-  }, [hospitals, effectiveFilterEmail, membersList]);
+  }, [hospitals, effectiveFilterEmail, membersList, pickerMode, readOnly]);
 
   const handleSelectCongregation = (number: string) => {
     setSelectedCongNumber(number);
@@ -313,7 +435,21 @@ export const InteractiveMap: React.FC<InteractiveMapPropsExtended> = ({
               Limpiar
             </button>
           )}
+
+          <button
+            onClick={() => onOpenHospitalModal()}
+            className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg text-xs flex items-center justify-center gap-1.5 shrink-0 shadow-sm"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            Agregar Hospital
+          </button>
         </div>
+      )}
+
+      {pickerMode && (
+        <p className="text-[11px] text-slate-500 bg-sky-50 border border-sky-200 rounded-lg px-2.5 py-1.5 -mt-1">
+          📍 Haz clic en el mapa o arrastra el pin azul para ajustar la ubicación exacta.
+        </p>
       )}
 
       <div

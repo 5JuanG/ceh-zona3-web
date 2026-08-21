@@ -92,7 +92,7 @@ export const Header: React.FC<HeaderProps> = ({
       {/* Menú Desplegable Lateral para Dispositivos Móviles */}
       {isOpen && (
         <div className="md:hidden fixed inset-0 z-50 flex justify-end bg-black/60 backdrop-blur-sm">
-          <div className="w-64 bg-slate-950 h-full p-6 shadow-2xl border-l border-slate-800 flex flex-col justify-between">
+          <div className="w-64 bg-slate-950 h-full p-6 shadow-2xl border-l border-slate-800 flex flex-col justify-between overflow-y-auto">
             <div className="flex flex-col space-y-4">
               <div className="flex items-center justify-between mb-4">
                 <span className="font-bold text-slate-200">Panel CEH</span>
