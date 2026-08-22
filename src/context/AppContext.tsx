@@ -94,6 +94,19 @@ const STORAGE_KEY_WORKSHEETS = 'clh_app_worksheets_v2';
 const STORAGE_KEY_CEH_MEMBERS = 'clh_app_ceh_members_v2';
 const STORAGE_KEY_CONGREGATIONS = 'clh_app_congregations_v2';
 
+// Guarda en localStorage de forma segura. localStorage es solo una caché
+// local para carga rápida; la fuente real de los datos es Firestore. Si el
+// navegador llega a llenar su cuota (por ejemplo, por fotos de perfil
+// grandes), esto evita que la aplicación truene con una pantalla de error;
+// simplemente se pierde la copia local y seguirá funcionando con la nube.
+const safeSetLocalStorage = (key: string, value: unknown) => {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch (err) {
+    console.warn(`No se pudo guardar "${key}" en localStorage (posible cuota excedida):`, err);
+  }
+};
+
 const normalizeStringForComparison = (str: string) => 
   (str || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().replace(/\s+/g, ' ');
 
@@ -291,31 +304,31 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   // Local persistence effects
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY_DOCTORS, JSON.stringify(doctors));
+    safeSetLocalStorage(STORAGE_KEY_DOCTORS, doctors);
   }, [doctors]);
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY_HOSPITALS, JSON.stringify(hospitals));
+    safeSetLocalStorage(STORAGE_KEY_HOSPITALS, hospitals);
   }, [hospitals]);
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY_VISITS, JSON.stringify(visits));
+    safeSetLocalStorage(STORAGE_KEY_VISITS, visits);
   }, [visits]);
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY_CASES, JSON.stringify(cases));
+    safeSetLocalStorage(STORAGE_KEY_CASES, cases);
   }, [cases]);
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY_WORKSHEETS, JSON.stringify(worksheets));
+    safeSetLocalStorage(STORAGE_KEY_WORKSHEETS, worksheets);
   }, [worksheets]);
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY_CEH_MEMBERS, JSON.stringify(cehMembers));
+    safeSetLocalStorage(STORAGE_KEY_CEH_MEMBERS, cehMembers);
   }, [cehMembers]);
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY_CONGREGATIONS, JSON.stringify(congregations));
+    safeSetLocalStorage(STORAGE_KEY_CONGREGATIONS, congregations);
   }, [congregations]);
 
   // Real-time Cloud Sync from Firebase Firestore across all devices (Desktop, Mobile, etc.)
@@ -366,7 +379,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
                 }
 
                 setter(itemsToSet);
-                localStorage.setItem(storageKey, JSON.stringify(itemsToSet));
+                safeSetLocalStorage(storageKey, itemsToSet);
               } else {
                 // Remote doc empty or ill-formed: fallback to local or default data
                 const savedLocal = localStorage.getItem(storageKey);
@@ -381,7 +394,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
                 }
                 setDoc(docRef, { items: localParsed, updatedAt: new Date().toISOString() }).catch(console.warn);
                 setter(localParsed);
-                localStorage.setItem(storageKey, JSON.stringify(localParsed));
+                safeSetLocalStorage(storageKey, localParsed);
               }
             } else {
               // Document doesn't exist yet in Firestore
@@ -397,7 +410,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
               }
               setDoc(docRef, { items: initialData, updatedAt: new Date().toISOString() }).catch(console.warn);
               setter(initialData);
-              localStorage.setItem(storageKey, JSON.stringify(initialData));
+              safeSetLocalStorage(storageKey, initialData);
             }
             setIsCloudSynced(true);
           },
@@ -537,7 +550,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       const updated = prev.map(h => h.id === id ? { ...h, ...updatedFields } : h);
       saveDocToCloud('hospitals', updated);
       try {
-        localStorage.setItem(STORAGE_KEY_HOSPITALS, JSON.stringify(updated));
+        safeSetLocalStorage(STORAGE_KEY_HOSPITALS, updated);
       } catch (e) {
         console.warn('LocalStorage save error on hospital update:', e);
       }
@@ -550,7 +563,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       const updated = prev.filter(h => h.id !== id);
       saveDocToCloud('hospitals', updated);
       try {
-        localStorage.setItem(STORAGE_KEY_HOSPITALS, JSON.stringify(updated));
+        safeSetLocalStorage(STORAGE_KEY_HOSPITALS, updated);
       } catch (e) {
         console.warn('LocalStorage save error on hospital deletion:', e);
       }

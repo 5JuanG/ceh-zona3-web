@@ -64,16 +64,64 @@ export const CEHMemberModal: React.FC<CEHMemberModalProps> = ({
     setConfirmDelete(false);
   }, [memberToEdit, isOpen]);
 
-  const handlePhotoFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const [photoError, setPhotoError] = useState('');
+
+  // Redimensiona y comprime la foto en el navegador antes de convertirla a
+  // base64. Las fotos de celular sin comprimir pueden pesar varios MB y,
+  // multiplicadas por todos los integrantes, llenan el localStorage del
+  // navegador (error "exceeded the quota"). Al limitar el lado más largo a
+  // 400px y usar JPEG de calidad ~0.8, cada foto queda en ~30-80 KB.
+  const MAX_DIMENSION = 400;
+  const JPEG_QUALITY = 0.8;
+
+  const resizeImageFile = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onerror = () => reject(new Error('No se pudo leer el archivo.'));
+      reader.onload = (evt) => {
+        const img = new Image();
+        img.onerror = () => reject(new Error('El archivo no es una imagen válida.'));
+        img.onload = () => {
+          let { width, height } = img;
+          if (width > height && width > MAX_DIMENSION) {
+            height = Math.round((height * MAX_DIMENSION) / width);
+            width = MAX_DIMENSION;
+          } else if (height > MAX_DIMENSION) {
+            width = Math.round((width * MAX_DIMENSION) / height);
+            height = MAX_DIMENSION;
+          }
+
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          if (!ctx) {
+            reject(new Error('No se pudo procesar la imagen.'));
+            return;
+          }
+          ctx.drawImage(img, 0, 0, width, height);
+          resolve(canvas.toDataURL('image/jpeg', JPEG_QUALITY));
+        };
+        img.src = evt.target?.result as string;
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const handlePhotoFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (evt) => {
-      if (evt.target?.result) {
-        setPhotoUrl(evt.target.result as string);
-      }
-    };
-    reader.readAsDataURL(file);
+    setPhotoError('');
+    try {
+      const resized = await resizeImageFile(file);
+      setPhotoUrl(resized);
+    } catch (err: any) {
+      console.error('Error al procesar la foto:', err);
+      setPhotoError('No se pudo procesar la foto. Intenta con otra imagen.');
+    } finally {
+      // Permite volver a seleccionar el mismo archivo si se corrige el error
+      e.target.value = '';
+    }
   };
 
   if (!isOpen) return null;
@@ -208,6 +256,9 @@ export const CEHMemberModal: React.FC<CEHMemberModalProps> = ({
                   </button>
                 )}
               </div>
+              {photoError && (
+                <p className="text-rose-600 text-[11px] font-semibold">{photoError}</p>
+              )}
               <input
                 type="url"
                 placeholder="O pegar URL de imagen (https://...)"
