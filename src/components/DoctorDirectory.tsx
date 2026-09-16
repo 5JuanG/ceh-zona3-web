@@ -171,6 +171,7 @@ export const DoctorDirectory: React.FC<DoctorDirectoryProps> = ({
               <option value="todos">Todos los Roles</option>
               <option value="colaborador">Médico Colaborador</option>
               <option value="consultor">Médico Consultor</option>
+              <option value="agenda">Agenda (por calificar)</option>
               <option value="proveedor_salud">Proveedor de la Salud</option>
               <option value="contacto_administrativo">Contacto Administrativo</option>
             </select>
@@ -283,11 +284,13 @@ export const DoctorDirectory: React.FC<DoctorDirectoryProps> = ({
                           ? 'bg-sky-50 text-sky-800 border-sky-200'
                           : doc.type === 'consultor'
                           ? 'bg-indigo-50 text-indigo-800 border-indigo-200'
+                          : doc.type === 'agenda'
+                          ? 'bg-teal-50 text-teal-800 border-teal-200'
                           : doc.type === 'proveedor_salud'
                           ? 'bg-amber-50 text-amber-800 border-amber-200'
                           : 'bg-slate-100 text-slate-700 border-slate-200'
                       }`}>
-                        {doc.type === 'colaborador' ? 'Médico Colaborador' : doc.type === 'consultor' ? 'Médico Consultor' : doc.type === 'proveedor_salud' ? 'Proveedor de la Salud' : 'Contacto Admin'}
+                        {doc.type === 'colaborador' ? 'Médico Colaborador' : doc.type === 'consultor' ? 'Médico Consultor' : doc.type === 'agenda' ? 'Agenda' : doc.type === 'proveedor_salud' ? 'Proveedor de la Salud' : 'Contacto Admin'}
                       </span>
 
                       {/* Availability Status Badge */}

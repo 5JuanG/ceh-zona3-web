@@ -1,4 +1,4 @@
-export type DoctorType = 'colaborador' | 'consultor' | 'contacto_administrativo' | 'proveedor_salud';
+export type DoctorType = 'colaborador' | 'consultor' | 'contacto_administrativo' | 'proveedor_salud' | 'agenda';
 
 export type DoctorStatus = 'disponible' | 'solo_urgencias' | 'en_consulta' | 'inactivo';
 

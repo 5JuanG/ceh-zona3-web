@@ -556,12 +556,31 @@ export const DoctorModal: React.FC<DoctorModalProps> = ({ isOpen, onClose, docto
                     >
                       <option value="colaborador">Médico Colaborador</option>
                       <option value="consultor">Médico Consultor</option>
+                      <option value="agenda">Agenda (aún no calificado, pero coopera y es amable)</option>
                       <option value="proveedor_salud">Proveedor de Salud (aún sin confirmar / de interés)</option>
                       <option value="contacto_administrativo">Personal Administrativo</option>
                     </select>
                     <p className="text-[10px] text-slate-500 mt-1">
-                      Usa "Proveedor de Salud" para médicos con una especialidad de interés que todavía no se consideran colaboradores o consultores.
+                      Usa "Proveedor de Salud" para médicos con una especialidad de interés que todavía no se consideran colaboradores o consultores. Usa "Agenda" para médicos que aún no se califican como colaboradores, pero que ayudan y son amables con el CEH — quedarán en un directorio telefónico aparte.
                     </p>
+
+                    {type === 'agenda' && (
+                      <div className="mt-3 bg-white border border-sky-300 rounded-xl p-3">
+                        <label className="block font-bold text-slate-800 mb-1">
+                          Nota: ¿cómo coopera este médico con el CEH?
+                        </label>
+                        <textarea
+                          rows={3}
+                          value={notes}
+                          onChange={e => setNotes(e.target.value)}
+                          placeholder="Ej. Nos permite explicarle sobre alternativas sin sangre, es accesible por teléfono, ha aceptado platicar con los Ancianos, etc."
+                          className="w-full p-2.5 rounded-xl border border-slate-300 font-medium text-slate-900"
+                        />
+                        <p className="text-[10px] text-slate-500 mt-1">
+                          Esta nota aparecerá junto a su nombre y especialidad en el directorio de Agenda.
+                        </p>
+                      </div>
+                    )}
 
                     {(type === 'proveedor_salud' || type === 'contacto_administrativo') && (
                       <div className="mt-3 bg-white border border-sky-300 rounded-xl p-3">

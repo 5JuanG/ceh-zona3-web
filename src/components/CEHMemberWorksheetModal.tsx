@@ -59,6 +59,10 @@ export const CEHMemberWorksheetModal: React.FC<CEHMemberWorksheetModalProps> = (
     perteneceDoctorAMiembro(d) && (d.type === 'colaborador' || d.type === 'consultor' || !d.type)
   ) : [];
 
+  const medicosAgenda = doctors ? doctors.filter(d =>
+    perteneceDoctorAMiembro(d) && d.type === 'agenda'
+  ) : [];
+
   const proveedoresSalud = doctors ? doctors.filter(d =>
     perteneceDoctorAMiembro(d) && d.type === 'proveedor_salud'
   ) : [];
@@ -92,30 +96,63 @@ export const CEHMemberWorksheetModal: React.FC<CEHMemberWorksheetModalProps> = (
       const pageWidth = pdf.internal.pageSize.getWidth();
       const pageHeight = pdf.internal.pageSize.getHeight();
 
-      const agregarPaginaAlPDF = async (elemento: HTMLElement, esPrimera: boolean) => {
+      // Margen real alrededor del contenido, y ancho SIEMPRE fijo (antes,
+      // si el contenido resultaba más alto que una hoja, se encogía todo
+      // el ancho para que cupiera, dejando la página angosta con márgenes
+      // gigantes). Si no cabe en una hoja, ahora se reparte en páginas
+      // adicionales manteniendo el ancho completo.
+      const margin = 8; // mm
+      const contentWidth = pageWidth - margin * 2;
+      const contentHeight = pageHeight - margin * 2;
+
+      let paginasAgregadas = 0;
+
+      const agregarPaginaAlPDF = async (elemento: HTMLElement) => {
         const canvas = await html2canvas(elemento, {
-          scale: 1.5,
+          scale: 2,
           backgroundColor: '#ffffff',
           useCORS: false,
-          logging: false
+          logging: false,
+          windowWidth: elemento.scrollWidth
         });
-        const imgData = canvas.toDataURL('image/jpeg', 0.95);
-        const imgHeightMM = (canvas.height * pageWidth) / canvas.width;
 
-        if (!esPrimera) pdf.addPage();
+        const imgHeightMM = (canvas.height * contentWidth) / canvas.width;
+        const pxPerMM = canvas.height / imgHeightMM;
 
-        if (imgHeightMM <= pageHeight) {
-          pdf.addImage(imgData, 'JPEG', 0, 0, pageWidth, imgHeightMM);
-        } else {
-          // Si el contenido resultó más alto que una hoja carta, lo
-          // escalamos para que quepa completo en una sola página.
-          const factor = pageHeight / imgHeightMM;
-          pdf.addImage(imgData, 'JPEG', 0, 0, pageWidth * factor, pageHeight);
+        let alturaRestanteMM = imgHeightMM;
+        let offsetPx = 0;
+
+        while (alturaRestanteMM > 0.01) {
+          if (paginasAgregadas > 0) pdf.addPage();
+          paginasAgregadas++;
+
+          const alturaEnEstaPaginaMM = Math.min(alturaRestanteMM, contentHeight);
+          const alturaEnEstaPaginaPx = Math.max(1, Math.round(alturaEnEstaPaginaMM * pxPerMM));
+
+          const trozo = document.createElement('canvas');
+          trozo.width = canvas.width;
+          trozo.height = alturaEnEstaPaginaPx;
+          const ctx = trozo.getContext('2d');
+          if (ctx) {
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, trozo.width, trozo.height);
+            ctx.drawImage(
+              canvas,
+              0, offsetPx, canvas.width, alturaEnEstaPaginaPx,
+              0, 0, canvas.width, alturaEnEstaPaginaPx
+            );
+          }
+
+          const trozoData = trozo.toDataURL('image/jpeg', 0.95);
+          pdf.addImage(trozoData, 'JPEG', margin, margin, contentWidth, alturaEnEstaPaginaMM);
+
+          offsetPx += alturaEnEstaPaginaPx;
+          alturaRestanteMM -= alturaEnEstaPaginaMM;
         }
       };
 
-      await agregarPaginaAlPDF(pagina1, true);
-      await agregarPaginaAlPDF(pagina2, false);
+      await agregarPaginaAlPDF(pagina1);
+      await agregarPaginaAlPDF(pagina2);
 
       const filename = `Hoja_Trabajo_${zonaAsignadaRaw.replace(/\s+/g, '_')}_${miembroActivo?.name?.replace(/\s+/g, '_') || 'Miembro'}.pdf`;
       pdf.save(filename);
@@ -241,6 +278,23 @@ export const CEHMemberWorksheetModal: React.FC<CEHMemberWorksheetModalProps> = (
                           <span className="font-bold text-slate-900">{m.name || m.nombre}</span> <span className="text-[10px] font-semibold text-amber-700">— {m.specialty}</span>
                           <p className="text-[10.5px] text-slate-600 leading-snug mt-0.5">
                             {m.notes && m.notes.trim() ? m.notes : <span className="italic text-slate-400">Sin reseña registrada aún.</span>}
+                          </p>
+                        </li>
+                      ))
+                    }
+                  </ul>
+                </div>
+
+                <div className="border border-slate-200 rounded-lg p-3 bg-slate-50/50 flex flex-col">
+                  <h5 className="font-bold text-teal-800 border-b pb-1.5 mb-2 text-sm">📇 Agenda — aún no calificados ({medicosAgenda.length})</h5>
+                  <ul className="space-y-2 overflow-y-auto flex-1">
+                    {medicosAgenda.length === 0 ? <li className="text-slate-400 italic text-[11px]">Sin médicos en Agenda registrados en la zona.</li> :
+                      medicosAgenda.map(a => (
+                        <li key={a.id} className="bg-teal-50/40 px-2.5 py-1.5 rounded border border-teal-200">
+                          <span className="font-bold text-slate-800">{a.name || a.nombre}</span> <span className="text-[10px] font-semibold text-teal-700">— {a.specialty}</span>
+                          {a.phoneMobile && <span className="text-[10px] font-mono text-slate-500"> · {a.phoneMobile}</span>}
+                          <p className="text-[10.5px] text-slate-600 leading-snug mt-0.5">
+                            {a.notes && a.notes.trim() ? a.notes : <span className="italic text-slate-400">Sin nota de cooperación registrada aún.</span>}
                           </p>
                         </li>
                       ))

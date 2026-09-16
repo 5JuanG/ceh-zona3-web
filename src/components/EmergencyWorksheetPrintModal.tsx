@@ -42,28 +42,67 @@ export const EmergencyWorksheetPrintModal: React.FC<EmergencyWorksheetPrintModal
       const pageWidth = pdf.internal.pageSize.getWidth();
       const pageHeight = pdf.internal.pageSize.getHeight();
 
-      const agregarPaginaAlPDF = async (elemento: HTMLElement, esPrimera: boolean) => {
+      // Margen real alrededor del contenido (antes se pegaba a 0,0, sin
+      // ningún respiro respecto al borde físico de la hoja).
+      const margin = 8; // mm
+      const contentWidth = pageWidth - margin * 2;
+      const contentHeight = pageHeight - margin * 2;
+
+      let paginasAgregadas = 0;
+
+      // Agrega un elemento al PDF. El ancho SIEMPRE es el mismo
+      // (contentWidth) sin importar el dispositivo desde el que se genere
+      // el PDF, así ambas hojas quedan con el mismo ancho y márgenes.
+      // Si el contenido resulta más alto que una hoja física (por ejemplo
+      // porque el celular apiló alguna sección en columnas), en vez de
+      // encoger todo el ancho para que quepa (lo que se veía "angosto"),
+      // se reparte en páginas adicionales manteniendo el ancho completo.
+      const agregarPaginaAlPDF = async (elemento: HTMLElement) => {
         const canvas = await html2canvas(elemento, {
-          scale: 1.5,
+          scale: 2,
           backgroundColor: '#ffffff',
           useCORS: false,
-          logging: false
+          logging: false,
+          windowWidth: elemento.scrollWidth
         });
-        const imgData = canvas.toDataURL('image/jpeg', 0.95);
-        const imgHeightMM = (canvas.height * pageWidth) / canvas.width;
 
-        if (!esPrimera) pdf.addPage();
+        const imgHeightMM = (canvas.height * contentWidth) / canvas.width;
+        const pxPerMM = canvas.height / imgHeightMM;
 
-        if (imgHeightMM <= pageHeight) {
-          pdf.addImage(imgData, 'JPEG', 0, 0, pageWidth, imgHeightMM);
-        } else {
-          const factor = pageHeight / imgHeightMM;
-          pdf.addImage(imgData, 'JPEG', 0, 0, pageWidth * factor, pageHeight);
+        let alturaRestanteMM = imgHeightMM;
+        let offsetPx = 0;
+
+        while (alturaRestanteMM > 0.01) {
+          if (paginasAgregadas > 0) pdf.addPage();
+          paginasAgregadas++;
+
+          const alturaEnEstaPaginaMM = Math.min(alturaRestanteMM, contentHeight);
+          const alturaEnEstaPaginaPx = Math.max(1, Math.round(alturaEnEstaPaginaMM * pxPerMM));
+
+          const trozo = document.createElement('canvas');
+          trozo.width = canvas.width;
+          trozo.height = alturaEnEstaPaginaPx;
+          const ctx = trozo.getContext('2d');
+          if (ctx) {
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, trozo.width, trozo.height);
+            ctx.drawImage(
+              canvas,
+              0, offsetPx, canvas.width, alturaEnEstaPaginaPx,
+              0, 0, canvas.width, alturaEnEstaPaginaPx
+            );
+          }
+
+          const trozoData = trozo.toDataURL('image/jpeg', 0.95);
+          pdf.addImage(trozoData, 'JPEG', margin, margin, contentWidth, alturaEnEstaPaginaMM);
+
+          offsetPx += alturaEnEstaPaginaPx;
+          alturaRestanteMM -= alturaEnEstaPaginaMM;
         }
       };
 
-      await agregarPaginaAlPDF(pagina1, true);
-      await agregarPaginaAlPDF(pagina2, false);
+      await agregarPaginaAlPDF(pagina1);
+      await agregarPaginaAlPDF(pagina2);
 
       const filename = `Hoja_Emergencia_hlc-7-S_${(worksheet.patientName || 'Paciente').replace(/\s+/g, '_')}.pdf`;
       pdf.save(filename);
@@ -315,10 +354,10 @@ export const EmergencyWorksheetPrintModal: React.FC<EmergencyWorksheetPrintModal
             <div className="bg-[#f2a770] font-bold uppercase text-center text-[11px] py-0.5 border-b border-slate-800 text-slate-950">
               RESULTADOS DE LOS ANÁLISIS DE LABORATORIO
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-12 print:grid-cols-12 text-[10px]">
+            <div className="grid grid-cols-12 text-[10px]">
 
               {/* Lab entries list */}
-              <div className="sm:col-span-7 print:col-span-7 p-1 sm:border-r print:border-r border-b sm:border-b-0 print:border-b-0 border-slate-800 space-y-1">
+              <div className="col-span-7 p-1 border-r border-slate-800 space-y-1">
                 {(!worksheet.labResults || worksheet.labResults.length === 0) ? (
                   <div className="text-slate-500 italic p-2 text-center">No hay registros de laboratorio cargados.</div>
                 ) : (
@@ -339,7 +378,7 @@ export const EmergencyWorksheetPrintModal: React.FC<EmergencyWorksheetPrintModal
               </div>
 
               {/* Standard Reference Table */}
-              <div className="sm:col-span-5 print:col-span-5 p-1 bg-slate-50">
+              <div className="col-span-5 p-1 bg-slate-50">
                 <div className="text-center font-bold text-[10px] text-slate-900">Valores normales de laboratorio</div>
                 <div className="text-[8.5px] italic text-center text-slate-600 mb-1">Referencia: Blood (2.ª edición). El embarazo y la edad alteran estos valores.</div>
                 <div className="overflow-x-auto">
