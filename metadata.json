@@ -1,0 +1,6 @@
+{
+  "name": "Gestión Comité de Enlace Hospitalario",
+  "description": "Aplicación para la gestión de hospitales, médicos colaboradores y consultores del Comité de Enlace.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

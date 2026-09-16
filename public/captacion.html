@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Captación de Prospectos - CEH</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
+    <form id="form-captacion" class="bg-white p-6 rounded-xl shadow-lg max-w-xl w-full border border-gray-200">
+        <h2 class="text-xl font-bold mb-4 text-blue-900 border-b pb-2">📋 Captación de Personal y Proveedores</h2>
+        
+        <div class="mb-4">
+            <label class="block text-xs font-bold text-gray-600 uppercase mb-1">Tipo de Registro</label>
+            <select id="tipo_personal" class="w-full border rounded p-2 bg-gray-50 text-sm font-medium" required onchange="toggleCampos()">
+                <option value="medico_especialista">Médico Especialista (No Colaborador)</option>
+                <option value="proveedor_salud">Proveedor de la Salud</option>
+                <option value="personal_administrativo">Personal Administrativo de Clínica</option>
+            </select>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div>
+                <label class="block text-xs font-bold text-gray-600 uppercase mb-1">Nombre Completo / Institución</label>
+                <input type="text" class="w-full border rounded p-2 text-sm" required>
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-gray-600 uppercase mb-1">Teléfono de Contacto</label>
+                <input type="tel" class="w-full border rounded p-2 text-sm" required>
+            </div>
+        </div>
+
+        <!-- Campo Dinámico: Especialidad -->
+        <div id="campo-especialidad" class="mb-4">
+            <label class="block text-xs font-bold text-gray-600 uppercase mb-1">Especialidad Médica</label>
+            <input type="text" class="w-full border rounded p-2 text-sm" placeholder="Ej. Hematología, Oncología, Cirugía">
+        </div>
+
+        <!-- Campo Dinámico: Servicios -->
+        <div id="campo-proveedor" class="mb-4 hidden">
+            <label class="block text-xs font-bold text-gray-600 uppercase mb-1">Servicios o Insumos Ofrecidos</label>
+            <input type="text" class="w-full border rounded p-2 text-sm" placeholder="Ej. Banco de sangre, Oxígeno medicinal">
+        </div>
+
+        <div class="mb-5 bg-yellow-50 border-l-4 border-yellow-500 p-3 rounded-r">
+            <p class="text-xs text-yellow-800 font-medium">⚠️ Nota: Este contacto se guardará en la lista de la zona con estatus de <strong>"Entrevistado"</strong>. No aparecerá como colaborador oficial hasta ser validado y autorizado por la Sucursal.</p>
+        </div>
+
+        <button type="submit" class="w-full bg-blue-700 hover:bg-blue-800 text-white font-bold py-3 rounded-lg shadow transition text-sm">
+            Guardar y Registrar en Zona 3
+        </button>
+    </form>
+
+    <script>
+        function toggleCampos() {
+            const tipo = document.getElementById('tipo_personal').value;
+            const esp = document.getElementById('campo-especialidad');
+            const prov = document.getElementById('campo-proveedor');
+            
+            if (tipo === 'medico_especialista') {
+                esp.classList.remove('hidden');
+                prov.classList.add('hidden');
+            } else if (tipo === 'proveedor_salud') {
+                esp.classList.add('hidden');
+                prov.classList.remove('hidden');
+            } else {
+                esp.classList.add('hidden');
+                prov.classList.add('hidden');
+            }
+        }
+    </script>
+</body>
+</html>

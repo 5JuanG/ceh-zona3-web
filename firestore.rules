@@ -1,0 +1,67 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // --- Paso 3: separación por ROL (admin / miembro) -------------------
+    // El rol de cada persona vive en su propio documento dentro de la
+    // colección "roles", con el ID del documento = su UID de Firebase
+    // Authentication (NO su correo). Nadie puede crear ni modificar estos
+    // documentos desde la app: se asignan a mano desde la consola de
+    // Firebase (Firestore Database > colección "roles" > documento con el
+    // UID > campo "role" = "admin"). Así, ningún miembro puede auto-
+    // otorgarse permisos de administrador aunque manipule la app.
+    match /roles/{uid} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+      allow write: if false;
+    }
+
+    function esAdmin() {
+      return request.auth != null
+        && get(/databases/$(database)/documents/roles/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    function sesionValida() {
+      return request.auth != null
+        && request.auth.token.firebase.sign_in_provider != 'anonymous';
+    }
+
+    // --- Datos operativos del día a día (hospitales, médicos, visitas,
+    // casos, hojas de trabajo) ---------------------------------------------
+    // Cualquier cuenta real de los 16 miembros puede leer Y escribir: esto
+    // es justo el trabajo diario de captura del comité.
+    match /appData/{document} {
+      allow read: if sesionValida();
+      allow write: if sesionValida()
+        && !(document in ['cehMembers', 'congregations']);
+    }
+
+    // --- Gestión de cuentas/roles del comité y asignación de territorios
+    // (congregaciones) ------------------------------------------------------
+    // Solo un administrador puede dar de alta/baja miembros, cambiar sus
+    // permisos, o reasignar de qué congregación es responsable cada quien.
+    match /appData/cehMembers {
+      allow read: if sesionValida();
+      allow write: if sesionValida() && esAdmin();
+    }
+    match /appData/congregations {
+      allow read: if sesionValida();
+      allow write: if sesionValida() && esAdmin();
+    }
+
+    // --- Activación de cuenta nueva (link de correo) ---------------------
+    // Cada quien solo puede marcar como activo SU PROPIO registro (por
+    // correo), y solo ese campo — no puede tocar el resto del documento.
+    match /miembros/{email} {
+      allow read: if request.auth != null;
+      allow update: if request.auth != null
+        && request.auth.token.email.lower() == email.lower()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['activo']);
+      allow create, delete: if false;
+    }
+
+    // --- Todo lo demás: bloqueado por defecto -----------------------------
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

@@ -1,0 +1,30 @@
+@import "tailwindcss";
+@import "leaflet/dist/leaflet.css";
+
+/* Force crosshair cursor during relocating mode across all Leaflet sub-elements */
+.leaflet-container.relocating-mode,
+.leaflet-container.relocating-mode *,
+.leaflet-container.relocating-mode .leaflet-interactive,
+.leaflet-container.relocating-mode .leaflet-marker-icon,
+.leaflet-container.relocating-mode .leaflet-grab,
+.leaflet-container.relocating-mode .leaflet-tile-pane,
+.leaflet-container.relocating-mode div,
+.leaflet-container.relocating-mode span,
+.leaflet-container.relocating-mode path,
+.leaflet-container.relocating-mode svg {
+  cursor: crosshair !important;
+}
+
+/* Custom Hospital Pins Cursor */
+.custom-hospital-globito-pin {
+  cursor: grab;
+}
+
+.custom-hospital-globito-pin:hover {
+  cursor: grab;
+}
+
+.custom-hospital-globito-pin:active,
+.leaflet-drag-target .custom-hospital-globito-pin {
+  cursor: grabbing !important;
+}
